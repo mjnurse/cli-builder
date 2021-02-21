@@ -6,6 +6,27 @@ if [[ "$1" == "-d" ]]; then
    shift
 fi
 
+l80="--------------------------------------------------------------------------------"
+
+c_bla="\\\e[30m"
+c_blu="\\\e[34m"
+c_cya="\\\e[36m"
+c_def="\\\e[39m"
+c_gra="\\\e[90m"
+c_gre="\\\e[32m"
+c_mag="\\\e[35m"
+c_red="\\\e[31m"
+c_whi="\\\e[97m"
+c_yel="\\\e[33m"
+
+c_lblu="\\\e[94m"
+c_lcya="\\\e[96m"
+c_lgra="\\\e[37m"
+c_lgre="\\\e[92m"
+c_lmag="\\\e[95m"
+c_lred="\\\e[91m"
+c_lyel="\\\e[93m"
+
 
 function check_params() {
    # param 1 - actual number of parameters
@@ -33,16 +54,8 @@ if [[ "$1" == "history" || "$1" == "h" ]]; then
    if [[ "$1" == "h" ]]; then shift; else shift 1; fi
    usage="history (h) [<xxxxx>]"
    check_params $# 0 "Usage: $usage"
-   print_command git log
-   git log
-   exit
-fi
-if [[ "$1" == "hhistory" || "$1" == "hh" ]]; then
-   if [[ "$1" == "hh" ]]; then shift; else shift 1; fi
-   usage="hhistory (hh) [<xxxxx>]"
-   check_params $# 0 "Usage: $usage"
-   print_command git log | sed '/^$/d; s/^  *//'
-   git log | sed '/^$/d; s/^  *//'
+   print_command echo -e "$(git log | sed "s/^  *//; /^$/d; s/^commit/${l80}\n${c_yel}Commit:/" |     sed "s/^Author/${c_lcya}Author/; s/^Date/${c_lgre}Date/; s/$/${c_whi}/")"
+   echo -e "$(git log | sed "s/^  *//; /^$/d; s/^commit/${l80}\n${c_yel}Commit:/" |     sed "s/^Author/${c_lcya}Author/; s/^Date/${c_lgre}Date/; s/$/${c_whi}/")"
    exit
 fi
 section="INDEX INTERROGATION "

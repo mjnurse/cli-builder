@@ -127,6 +127,27 @@ if [[ "$1" == "-d" ]]; then
    debug_yn=y
    shift
 fi
+
+l80="--------------------------------------------------------------------------------"
+
+c_bla="\\\e[30m"
+c_blu="\\\e[34m"
+c_cya="\\\e[36m"
+c_def="\\\e[39m"
+c_gra="\\\e[90m"
+c_gre="\\\e[32m"
+c_mag="\\\e[35m"
+c_red="\\\e[31m"
+c_whi="\\\e[97m"
+c_yel="\\\e[33m"
+
+c_lblu="\\\e[94m"
+c_lcya="\\\e[96m"
+c_lgra="\\\e[37m"
+c_lgre="\\\e[92m"
+c_lmag="\\\e[95m"
+c_lred="\\\e[91m"
+c_lyel="\\\e[93m"
 ' > $cli_name
 
 echo '# Shortcut aliases' > $cli_name.alias
