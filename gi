@@ -52,17 +52,34 @@ function print_command() {
 section="HISTORY"
 if [[ "$1" == "history" || "$1" == "h" ]]; then
    if [[ "$1" == "h" ]]; then shift; else shift 1; fi
-   usage="history (h) [<xxxxx>]"
+   usage="history (h)"
    check_params $# 0 "Usage: $usage"
-   print_command echo -e "$(git log | sed "s/^  *//; /^$/d; s/^commit/${l80}\n${c_yel}Commit:/" |     sed "s/^Author/${c_lcya}Author/; s/^Date/${c_lgre}Date/; s/$/${c_whi}/")"
-   echo -e "$(git log | sed "s/^  *//; /^$/d; s/^commit/${l80}\n${c_yel}Commit:/" |     sed "s/^Author/${c_lcya}Author/; s/^Date/${c_lgre}Date/; s/$/${c_whi}/")"
+   print_command git log > /tmp/gi1;   while read line; do echo $line;     if [[ ${line:0:6} == commit ]]; then       git diff-tree --no-commit-id --name-only -r ${line:7:99} |         tr "\n" " " | fold -s -w 100; echo;     fi;   done < /tmp/gi1 |   sed "s/^  *//; /^$/d; s/^commit/${l80}\n${c_yel}Commit:/" |   sed "s/^Author/${c_lcya}Author/; s/^Date/${c_lgre}Date/; s/$/${c_whi}/" > /tmp/gi2;   echo -e "$(cat /tmp/gi2)";   rm -f /tmp/gi1 /tmp/gi2
+   git log > /tmp/gi1;   while read line; do echo $line;     if [[ ${line:0:6} == commit ]]; then       git diff-tree --no-commit-id --name-only -r ${line:7:99} |         tr "\n" " " | fold -s -w 100; echo;     fi;   done < /tmp/gi1 |   sed "s/^  *//; /^$/d; s/^commit/${l80}\n${c_yel}Commit:/" |   sed "s/^Author/${c_lcya}Author/; s/^Date/${c_lgre}Date/; s/$/${c_whi}/" > /tmp/gi2;   echo -e "$(cat /tmp/gi2)";   rm -f /tmp/gi1 /tmp/gi2
    exit
 fi
-section="INDEX INTERROGATION "
+section="STATUS"
+if [[ "$1" == "status" || "$1" == "s" ]]; then
+   if [[ "$1" == "s" ]]; then shift; else shift 1; fi
+   usage="status (s)"
+   check_params $# 0 "Usage: $usage"
+   print_command git status
+   git status
+   exit
+fi
+section="ADD/COMMIT"
+if [[ "$1 $2" == "push -f|--force" || "$1" == "p" ]]; then
+   if [[ "$1" == "p" ]]; then shift; else shift 2; fi
+   usage="push (p) [-f|--force] [<message>]"
+   check_params $# 0 "Usage: $usage"
+   print_command force_yn=n;   if [[ $1 == -f || $1 == --force ]]; then     force_yn=y;     shift;   fi;   echo $1
+   force_yn=n;   if [[ $1 == -f || $1 == --force ]]; then     force_yn=y;     shift;   fi;   echo $1
+   exit
+fi
 section="HELP"
-if [[ "$1" == "help" || "$1" == "gih" ]]; then
-   if [[ "$1" == "gih" ]]; then shift; else shift 1; fi
-   usage="help (gih)"
+if [[ "$1" == "help" || "$1" == "he" ]]; then
+   if [[ "$1" == "he" ]]; then shift; else shift 1; fi
+   usage="help (he)"
    check_params $# 0 "Usage: $usage"
    egrep "usage=|section=" $0 | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=//; s/\"//g"
    exit

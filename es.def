@@ -1,3 +1,5 @@
+# ES
+
 # ----------------------------------------------------------------------------------------------------------------------------------
 = CLUSTER
 # ----------------------------------------------------------------------------------------------------------------------------------
@@ -5,22 +7,30 @@
 clear cache (cc) [<index_name>] :: \
    query-es -o POST -a "$1/_cache/clear"
 
+cluster overview (co) :: \
+   query-es -o GET -a "/"
+
+cluster health (ch) :: \
+   query-es -o GET -a "_cluster/health?human&pretty"
+
 cluster stats (cs) :: \
-   query-es -o GET -a "_cluster/stats?human" \
-            -f 's/.*\("cluster_name":"[^"]*"\).*\("query_cache":{[^}]*}\).*\("mem":{[^}]*}\).*/\1\n   \2\n   \3\n/'
+   query-es -o GET -a "_cluster/stats?human&pretty"
 
 # ----------------------------------------------------------------------------------------------------------------------------------
-= INDEX INTERROGATION 
+= INDEX INTERROGATION
 # ----------------------------------------------------------------------------------------------------------------------------------
+
+count (c) <index_name> :: \
+   query-es -o GET -a "/$1/_count?pretty"
 
 list aliases (la) [<filter>] [<order_by_field_name>] :: \
    query-es -o GET -a "_cat/aliases?v&s=$2" -r 1 -f '1p;t; s/\(.*'$1'.*$\)/\1/;t;d'
 
 list indices (li) [<index_name>] :: \
-   query-es -o GET -a "_cat/indices/$1?v&h=health,status,index,pri,rep,docs.count,docs.deleted,store.size,pri.store.size&s=index" -r 1
+   query-es -o GET -a "_cat/indices/$1?v&h=health,status,index,pri,rep,sc,docs.count,docs.deleted,store.size,pri.store.size&s=index" -r 1
 
-list shards (ls) [<index_name>] :: \
-   query-es -o GET -a "_cat/shards/$1?v&h=index,shard,prirep,state,docs,store,node&s=index,shard,prirep" -r 1
+list shards (ls) [<index_name>] [<order_by_field_name>] :: \
+   query-es -o GET -a "_cat/shards/$1?v&h=index,shard,prirep,sc,state,docs,store,node&s=index,shard,prirep&s=$2" -r 1
 
 list shard details (lsd) [<index_name>] [<order_by_field_name>] :: \
    query-es -o GET -a "_cat/shards/$1?v&h=index,shard,prirep,state,docs,store,ip,segments.count,unassigned.reason,unassigned.for,node&s=$2"
@@ -47,6 +57,12 @@ forcemerge progress (fmp) :: \
 create index (ci) <index_name> <number_of_shards> <number_of_replicas> :: \
    query-es -o PUT -a "$1" -j '{"settings":{"index":{"number_of_shards":'$2',"number_of_replicas":'$3'}}}'
 
+create index from mapping (cifm) <index_name> <number_of_shards> <number_of_replicas> <mapping-json> :: \
+   query-es -o PUT -a "$1" -j '{"settings":{"index":{"number_of_shards":'$2',"number_of_replicas":'$3'}},"mappings":'$4'}'
+
+clone index (clni) <index_name> <new_index_name> :: \
+   query-es -o POST -a "$1/_clone/$2"
+
 delete index (di) <index_name> :: \
    query-es -o DELETE -a "$1"
 
@@ -56,14 +72,14 @@ open index (opi) <index_name> :: \
 close index (cli) <index_name> :: \
    query-es -o POST -a "$1/_close"
 
+enable read only (ero) <index_name> :: \
+   query-es -o PUT -a "$1/_settings" -j '{"index.blocks.write": true}'
+
 enable read write (erw) <index_name> :: \
-   query-es -o PUT -a "$1/_settings" -j '{"index.blocks.read_only_allow_delete": null}'
+   query-es -o PUT -a "$1/_settings" -j '{"index.blocks.write": false}'
 
 reindex index (ri) <source_index_name> <dest_index_name> :: \
    query-es -o POST -a "_reindex" -j '{"source":{"index":"'$1'"},"dest":{"index":"'$2'"}}'
-
-forcemerge (fm) <index_name> <max_num_segments> :: \
-   query-es -o POST -a "$1/_forcemerge?max_num_segments=$2"
 
 move shard (ms) <index_name> <shard_num> <from_node_name> <to_node_name> :: \
    query-es -o POST -a "_cluster/reroute" -j '{"commands":[{"move":{"index":"'$1'","shard":'$2',"from_node":"'$3'","to_node":"'$4'"}}]}'
@@ -77,11 +93,17 @@ disable shard allocation (dsa) :: \
 reenable shard allocation (rsa) :: \
    query-es -o PUT -a "_cluster/settings" -j '{"persistent":{"cluster.routing.allocation.enable":null}}'
 
+forcemerge (fm) <index_name> <max_num_segments> :: \
+   query-es -o POST -a "$1/_forcemerge?max_num_segments=$2"
+
+refresh (r) <index_name> :: \
+   query-es -o POST -a "$1/_refresh"
+
 # ----------------------------------------------------------------------------------------------------------------------------------
 = INDEX ENTRY MANIPULATION
 # ----------------------------------------------------------------------------------------------------------------------------------
 
-add entry (ae) <index_name> <entry_json> :: query-es -o POST -a /$1/_doc -j "$2"
+add entry (ae) <index_name> <entry_json> :: query-es -o POST -a $1/_doc -j "$2"
 
 # ----------------------------------------------------------------------------------------------------------------------------------
 = NODES
@@ -110,8 +132,14 @@ search (s) <index_name> <search_term> :: \
 search json (sj) <index_name> <search_json> :: \
    query-es -o GET -a "$1/_search?pretty" -j "$2"
 
+search match (sm) <index_name> <field_name> <value> :: \
+   query-es -o GET -a "$1/_search?pretty" -j '{"query": { "match": { "'$2'": "'$3'" } } }'
+
+search term (st) <index_name> <field_name> <value> :: \
+   query-es -o GET -a "$1/_search?pretty" -j '{"query": { "term": { "'$2'": "'$3'" } } }'
+
 search summary (ss) <index_name> <search_term> :: \
-   query-es -o GET -a "$1/_search?q=$Qzz\("took":[0-9]*\).*\("_shards":{[^}]*}\).*\("total":[0-9]*,"max_score":[0-9\.]*\)/\1 \2 \3"
+   query-es -o GET -a "$1/_search?size=0&pretty" -j '{"aggs": {"count": {"terms": { "field" : "'$2'", "size" : 100 } } } }'
 
 # ----------------------------------------------------------------------------------------------------------------------------------
 = TASKS
@@ -125,117 +153,138 @@ list tasks detail (ltd) [<sort_field>] :: \
    query-es -o GET -a "/_cat/tasks?v&s=$1"
 
 # ----------------------------------------------------------------------------------------------------------------------------------
+= REPOS / SNAPSHOTS
+# ----------------------------------------------------------------------------------------------------------------------------------
+
+add repo (are) <repo_name> :: \
+   query-es -o PUT -a "_snapshot/$1?pretty" -j '{ "type": "fs", "settings": { "location": "'$1'" } } '
+
+delete repo (dre) <repo_name> :: \
+   query-es -o DELETE -a "_snapshot/$1?pretty"
+
+list repos (lre) :: \
+   query-es -o GET -a "_cat/repositories?v"
+
+create snapshot (csn) <repo_name> <snapshot_name> :: \
+   query-es -o PUT -a "_snapshot/$1/$2?pretty"
+
+delete snapshot (dsn) <repo_name> <snapshot_name> :: \
+   query-es -o DELETE -a "_snapshot/$1/$2?pretty"
+
+list snapshots (lsn) :: \
+   query-es -o GET -a "_cat/snapshots?v"
+
+snapshot details (snd) <repo_name> <snapshot_name> :: \
+   query-es -o GET -a "_snapshot/$1/$2?pretty
+
+restore snaphot (rsn) <repo_name> <snapshot_name> :: \
+   query-es -o POST -a "_snapshot/$1/$2/_restore?pretty"
+
+# ----------------------------------------------------------------------------------------------------------------------------------
 = GENERIC
 # ----------------------------------------------------------------------------------------------------------------------------------
 
 generic (g) <type-GET/POST/PUT> <api_call> :: query-es -o $1 -a "$2"
 
+query-es settings (qes) :: query-es -s
 
-### curl -s -u $CRED -XGET $EHOST'/_cat/indices?help'
 
-### _cat api provides compact columns for human readability
-### 
-### curl -s -u $CRED -XGET $EHOST'/_cluster/stats?human&pretty'
 
 ### overview perf:
-### 
+###
 ### curl -s -u $CRED -XGET $EHOST'/_cat/nodes?v&h=ip,port,role,master,cpu,ft,ftt,iic,iif,mt,mtt,d,mcs' | sort
 
 ### disk space:
-### 
+###
 ### curl -s -u $CRED -XGET $EHOST'/_cat/allocation?v'
 
 ### list node attributes:
-### 
+###
 ### curl -s -u $CRED -XGET $EHOST'/_cat/nodeattrs?v&s=node'
 
 ### get cluster settings - shows what has been set through api, does not show config file settings:
-### 
+###
 ### curl -s -u $CRED - XGET $EHOST'/_cluster/settings?pretty'
 
 ### debug
 ### enable debug for every node:
-### 
+###
 ### curl -s -u $CRED -XPUT $EHOST'/_cluster/settings?pretty' -d'{"transient": {"logger.discovery.zen":"TRACE"}}'
 
 ### debug security logger:
-### 
+###
 ### "logger.org.elasticsearch.xpack.security" : "TRACE"
 ### debug ldap logger:
-### 
-### "logger.org.elasticsearch.xpack.security.authc.ldap" : "TRACE" 
+###
+### "logger.org.elasticsearch.xpack.security.authc.ldap" : "TRACE"
 ### dump of all cluster state: nodes, indexes, shards and placements - BIG:
-### 
+###
 ### curl -s -u $CRED -XPUT $EHOST'/_cluster/state'
 
 ### overview:
-### 
+###
 ### get _cat/nodes?v&s=name&h=name,fielddataMemory,fielddataEvictions
 ### detailed stats on a per field/node basis:
-### 
-### GET /_nodes/stats/indices/fielddata?fields=* 
+###
+### GET /_nodes/stats/indices/fielddata?fields=*
 ### performance: request cache
 ### This cache is hit first on the coordinating node and caches a result in its entirety
-### 
+###
 ### full request cache stats on a per cluster and per index basis:
-### 
+###
 ### GET /_stats/request_cache?human
-### TODO: more 
-### 
+### TODO: more
+###
 ### performance: shard cache
 ### This cache is hit second on the participating nodes and caches the shard contents
-### 
+###
 ### https://www.elastic.co/guide/en/elasticsearch/reference/master/shard-request-cache.html
-### 
+###
 ### TODO: more
-### 
+###
 ### threads
 ### whats running:
-### 
+###
 ### curl -s -u $CRED -XGET $EHOST'/_cat/thread_pool'
 
 ### thread pool sizes:
-### 
+###
 ### curl -s -u $CRED -XGET $EHOST'/_cat/thread_pool?v&h=node_name,name,size,active,queue,queue_size,largest,min,max&s=node_name,name'
 
 ### aliases
 ### list aliases:
-### 
+###
 ### curl -s -u $CRED -XGET $EHOST'/_cat/aliases?v'
 
 ### change security/kibana index:
-### 
+###
 ### curl -s -u $CRED -XPUT $EHOST'/.kibana/_settings?pretty' -d' {"index" : {"number_of_replicas" : 9, "auto_expand_replicas" : false} }'
 
 ### templates
 ### list templates:
-### 
+###
 ### curl -s -u $CRED -XGET $EHOST'/_cat/templates?v'
 
 ### get security templates:
-### 
+###
 ### curl -s -u $CRED -XGET $EHOST'/_template/security-index-template?pretty'
 
 ### shards, replicas & recovery
 ### view the shard states for an index:
-### 
+###
 ### curl -k -s -u $CRED -XGET $EHOST'/_cat/shards/ams-txn-061918_jaro?v&s=index,node,sh&h=index,node,sh,pr,state,docs,store,recoverysource.type,unassigned.reason,unassigned.for'
 
-### set replicas for all gsna* indices that are open:
-### 
-### curl -s -u $CRED -XPUT $EHOST'/gsna*/_settings?pretty&expand_wildcards=open' -d' {   "index" : {"number_of_replicas" : 2} }'
-
 ### explain allocation - explain why we have unallocated shards:
-### 
+###
 ### curl -s -u $CRED -XGET $EHOST'/_cluster/allocation/explain?pretty'
 
 ### list . indices repl:
-### 
+###
 ### curl -s -u $CRED -XGET $EHOST'/_cat/indices/.*?v'
 
-### recovery status: 
-### 
-### curl -s -u $CRED -XGET $EHOST'/_cat/recovery?v' 
+### recovery status:
+###
+### curl -s -u $CRED -XGET $EHOST'/_cat/recovery?v'
 
 # PUT _cluster/settings
 # {
