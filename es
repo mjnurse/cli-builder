@@ -164,6 +164,22 @@ if [[ "$1 $2" == "forcemerge progress" || "$1" == "efmp" ]]; then
    exit
 fi
 section="INDEX MANIPULATION"
+if [[ "$1 $2 $3 $4" == "add index to alias" || "$1" == "eaita" ]]; then
+   if [[ "$1" == "eaita" ]]; then shift; else shift 4; fi
+   usage="add index to alias (eaita) <index_name> <alias_name>"
+   check_params $# 2 "Usage: $usage"
+   print_command query-es -o POST -a "_aliases" -j '{"actions":[{"add":{"index":"'$1'","alias":"'$2'"}}]}'
+   query-es -o POST -a "_aliases" -j '{"actions":[{"add":{"index":"'$1'","alias":"'$2'"}}]}'
+   exit
+fi
+if [[ "$1 $2 $3 $4" == "remove index from alias" || "$1" == "erifa" ]]; then
+   if [[ "$1" == "erifa" ]]; then shift; else shift 4; fi
+   usage="remove index from alias (erifa) <index_name> <alias_name>"
+   check_params $# 2 "Usage: $usage"
+   print_command query-es -o DELETE -a "$1/_aliases/$2"
+   query-es -o DELETE -a "$1/_aliases/$2"
+   exit
+fi
 if [[ "$1 $2" == "create index" || "$1" == "eci" ]]; then
    if [[ "$1" == "eci" ]]; then shift; else shift 2; fi
    usage="create index (eci) <index_name> <number_of_shards> <number_of_replicas>"

@@ -54,6 +54,12 @@ forcemerge progress (fmp) :: \
 = INDEX MANIPULATION
 # ----------------------------------------------------------------------------------------------------------------------------------
 
+add index to alias (aita) <index_name> <alias_name> :: \
+   query-es -o POST -a "_aliases" -j '{"actions":[{"add":{"index":"'$1'","alias":"'$2'"}}]}'
+
+remove index from alias (rifa) <index_name> <alias_name> :: \
+   query-es -o DELETE -a "$1/_aliases/$2"
+
 create index (ci) <index_name> <number_of_shards> <number_of_replicas> :: \
    query-es -o PUT -a "$1" -j '{"settings":{"index":{"number_of_shards":'$2',"number_of_replicas":'$3'}}}'
 
