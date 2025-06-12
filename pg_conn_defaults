@@ -1,0 +1,6 @@
+# Created: Wed Jun 11 16:48:54 BST 2025
+export PG_HOST="127.0.0.1"
+export PG_PORT="5431"
+export PG_DB="postgres"
+export PG_USER="postgres"
+export PG_password="postgres"

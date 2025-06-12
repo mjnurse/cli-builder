@@ -1,5 +1,5 @@
 # Shortcut aliases
-alias @gh="gi h"
-alias @gs="gi s"
-alias @gp="gi p"
-alias @ghe="gi he"
+alias @gh="gi gh"
+alias @gs="gi gs"
+alias @gp="gi gp"
+alias @ghe="gi ghe"

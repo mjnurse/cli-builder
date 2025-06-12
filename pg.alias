@@ -1,0 +1,10 @@
+# Shortcut aliases
+alias @pc="pg pc"
+alias @pscd="pg pscd"
+alias @pd="pg pd"
+alias @pld="pg pld"
+alias @pli="pg pli"
+alias @pls="pg pls"
+alias @plt="pg plt"
+alias @psd="pg psd"
+alias @phe="pg phe"

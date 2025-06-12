@@ -1,0 +1,86 @@
+# Kubectl
+
+# -------------------------------------------------------------------------------------------------
+= ALL
+# -------------------------------------------------------------------------------------------------
+
+get all (ga) [<namespace>] :: \
+    if [[ "$1" == "" ]]; then kubectl get all -A; else kubectl get all -n $1; fi
+
+get (g) <item> :: kubectl get $1
+
+# -------------------------------------------------------------------------------------------------
+= LOGS
+# -------------------------------------------------------------------------------------------------
+
+logs (l) <pod_name> [<namespace>] :: \
+    if [[ "$2" == "" ]]; then kubectl logs $1; else kubectl logs $1 -n $2; fi
+
+# -------------------------------------------------------------------------------------------------
+= NODES
+# -------------------------------------------------------------------------------------------------
+
+get node (gn) :: kubectl get nodes
+
+# -------------------------------------------------------------------------------------------------
+= PODS
+# -------------------------------------------------------------------------------------------------
+
+get pods (gp) [<namespace>] :: \
+    if [[ "$1" == "" ]]; then kubectl get pods -A; else kubectl get pods -n $1; fi
+
+delete pod (dp) <pod_name> [<namespace>] :: \
+    if [[ "$2" != "" ]]; then kubectl delete pod $1 -n $2; else kubectl delete pod $1; fi
+
+# -------------------------------------------------------------------------------------------------
+= PERSISTENT VOLUMES
+# -------------------------------------------------------------------------------------------------
+
+get persistent volumes (gpv) [<namespace>] :: \
+    if [[ "$1" == "" ]]; then kubectl get pv -A; \
+    else kubectl get pv -n $1; fi
+
+# -------------------------------------------------------------------------------------------------
+= PERSISTENT VOLUME CLAIMS
+# -------------------------------------------------------------------------------------------------
+
+get persistent volume claims (gpvc) [<namespace>] :: \
+    if [[ "$1" == "" ]]; then kubectl get pvc -A; \
+    else kubectl get pvc -n $1; fi
+
+# -------------------------------------------------------------------------------------------------
+= SECRETS
+# -------------------------------------------------------------------------------------------------
+
+get secrets (gse) [<namespace>] :: \
+    if [[ "$1" == "" ]]; then kubectl get secrets -A; \
+    else kubectl get secrets -n $1; fi
+
+delete service (dse) <secret_name> [<namespace>] :: \
+    if [[ "$2" != "" ]]; then kubectl delete secret $1 -n $2; \
+    else kubectl delete secret $1; fi
+
+# kubectl get secret mdm-elasticsearch-es-elastic-user -n elastic -o jsonpath='{.data.elastic}' | base64 --decode
+
+# -------------------------------------------------------------------------------------------------
+= SERVICES
+# -------------------------------------------------------------------------------------------------
+
+get services (gs) [<namespace>] :: \
+    if [[ "$1" == "" ]]; then kubectl get svc -A; \
+    else kubectl get svc -n $1; fi
+
+delete service (ds) <service_name> [<namespace>] :: \
+    if [[ "$2" != "" ]]; then kubectl delete svc $1 -n $2; \
+    else kubectl delete svc $1; fi
+
+# -------------------------------------------------------------------------------------------------
+= STATEFULSETS
+# -------------------------------------------------------------------------------------------------
+
+get statefulset (gss) [<namespace>] :: \
+    if [[ "$1" == "" ]]; then kubectl get statefulset -A; else kubectl get statefulset -n $1; fi
+
+delete statefulset (dss) <statefulset_name> [<namespace>] :: \
+    if [[ "$2" != "" ]]; then kubectl delete statefulset $1 -n $2; \
+    else kubectl delete statefulset $1; fi
