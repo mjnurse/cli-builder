@@ -27,7 +27,7 @@ status (s) :: git status
 = ADD/COMMIT
 # ---------------------------------------------------------------------------------------
 
-push (p) [-f|--force] [<message>] :: \
+push (p) [<-f|--force>] [<message>] :: \
     force_yn=n; \
     if [[ $1 == -f || $1 == --force ]]; then \
         force_yn=y; \
@@ -38,6 +38,7 @@ push (p) [-f|--force] [<message>] :: \
     else \
         message="$1"; \
     fi; \
+    ./gen-readme; \
     git add .; \
     git status; \
     if [[ "$1" != "-f" ]]; then \

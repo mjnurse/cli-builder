@@ -52,12 +52,12 @@ if [[ "$1" == "status" || "$1" == "gs" ]]; then
    exit
 fi
 section="ADD/COMMIT"
-if [[ "$1 $2" == "push -f|--force" || "$1" == "gp" ]]; then
-   if [[ "$1" == "gp" ]]; then shift; else shift 2; fi
-   usage="[95mpush [96m(gp)[97m [37m[-f|--force][97m [37m[<message>][97m[0m "
+if [[ "$1" == "push" || "$1" == "gp" ]]; then
+   if [[ "$1" == "gp" ]]; then shift; else shift 1; fi
+   usage="[95mpush [96m(gp)[97m [37m[<-f|--force>][97m [37m[<message>][97m[0m "
    check_params $# 0 "Usage: $usage"
-   print_command " force_yn=n; if [[ $1 == -f || $1 == --force ]]; then force_yn=y; shift; fi; if [[ \"$1\" == \"\" ]]; then message=\"Various\"; else message=\"$1\"; fi; git add .; git status; if [[ \"$1\" != \"-f\" ]]; then read -p 'Press a key to continue, CTRL-C to abort' dummy; fi; git commit -m 'Various'; git push origin master "
-   force_yn=n; if [[ $1 == -f || $1 == --force ]]; then force_yn=y; shift; fi; if [[ "$1" == "" ]]; then message="Various"; else message="$1"; fi; git add .; git status; if [[ "$1" != "-f" ]]; then read -p 'Press a key to continue, CTRL-C to abort' dummy; fi; git commit -m 'Various'; git push origin master
+   print_command " force_yn=n; if [[ $1 == -f || $1 == --force ]]; then force_yn=y; shift; fi; if [[ \"$1\" == \"\" ]]; then message=\"Various\"; else message=\"$1\"; fi; ./gen-readme; git add .; git status; if [[ \"$1\" != \"-f\" ]]; then read -p 'Press a key to continue, CTRL-C to abort' dummy; fi; git commit -m 'Various'; git push origin "
+   force_yn=n; if [[ $1 == -f || $1 == --force ]]; then force_yn=y; shift; fi; if [[ "$1" == "" ]]; then message="Various"; else message="$1"; fi; ./gen-readme; git add .; git status; if [[ "$1" != "-f" ]]; then read -p 'Press a key to continue, CTRL-C to abort' dummy; fi; git commit -m 'Various'; git push origin
    exit
 fi
 section="HELP"
