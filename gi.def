@@ -44,5 +44,4 @@ push (p) [-f|--force] [<message>] :: \
         read -p 'Press a key to continue, CTRL-C to abort' dummy; \
     fi; \
     git commit -m 'Various'; \
-    git push origin master
-
+    git push origin
