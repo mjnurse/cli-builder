@@ -38,7 +38,7 @@ push (p) [<-f|--force>] [<message>] :: \
     else \
         message="$1"; \
     fi; \
-    ./gen-readme; \
+    [ -f ./gen-readme ] && ./gen-readme; \
     git add .; \
     git status; \
     if [[ "$1" != "-f" ]]; then \
