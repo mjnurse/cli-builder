@@ -1,5 +1,10 @@
 # Shortcut aliases
+alias @glbl="gi glbl"
+alias @glbr="gi glbr"
+alias @gc="gi gc"
 alias @gh="gi gh"
-alias @gs="gi gs"
+alias @gpu="gi gpu"
 alias @gp="gi gp"
+alias @gs="gi gs"
+alias @gsb="gi gsb"
 alias @ghe="gi ghe"

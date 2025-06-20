@@ -1,8 +1,17 @@
 # GIT
 
 # ---------------------------------------------------------------------------------------
-= HISTORY
+= GENERAL
 # ---------------------------------------------------------------------------------------
+
+list branches local (lbl) :: \
+    git branch
+
+list branches remote (lbr) :: \
+    git branch -r
+
+clone (c) <url> :: \
+    git clone $1
 
 history (h) :: \
     git log > /tmp/gi1; \
@@ -17,15 +26,8 @@ history (h) :: \
     echo -e "$(cat /tmp/gi2)"; \
     rm -f /tmp/gi1 /tmp/gi2
 
-# ---------------------------------------------------------------------------------------
-= STATUS
-# ---------------------------------------------------------------------------------------
-
-status (s) :: git status
-
-# ---------------------------------------------------------------------------------------
-= ADD/COMMIT
-# ---------------------------------------------------------------------------------------
+pull (pu) :: \
+    git pull
 
 push (p) [<-f|--force>] [<message>] :: \
     force_yn=n; \
@@ -46,3 +48,8 @@ push (p) [<-f|--force>] [<message>] :: \
     fi; \
     git commit -m 'Various'; \
     git push origin
+
+status (s) :: git status
+
+switch branch (sb) <branch-name> :: \
+    git checkout $1 ## (git checkout)

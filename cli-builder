@@ -140,7 +140,9 @@ fi
 l80="--------------------------------------------------------------------------------"
 ' > $cli_name
 
-echo '# Shortcut aliases' > $cli_name.alias
+alias_list=''
+alias_name_list=''
+comp_option_list=''
 
 defns=$defns'
 = HELP
@@ -173,7 +175,7 @@ function print_command() {
 debug "Commands"
 debug "--------"
 
-echo "$defns" | \
+# echo "$defns" | \
 while IFS= read -r line ; do
 
   if [[ "${line:0:1}" == "=" ]]; then
@@ -183,7 +185,20 @@ while IFS= read -r line ; do
   elif [[ "$line" != "" ]]; then
     cmd="$(echo $line | sed 's/^.*:://; s/##.*//')"
     usage="$(echo ${line%% ::*} | sed "s/\[/\x1b[37m\[/g; s/\]/\]$CWHI/g; s/^/$CMAG/; s/(/$CCYA(/; s/)/)$CWHI/; s/$/$CDEF/")"
-    if echo $line | grep "##" > /dev/null; then help="$(echo $line | sed "s/^.*## */$CGRE # /; s/$/\x1b[0m/")"; else help=""; fi
+    if echo $line | grep "##" > /dev/null; then 
+        help="$(echo $line | sed "s/^.*## */$CGRE # /; s/$/\x1b[0m/")"
+        line="${line%%##*}"
+    else 
+        help=""
+    fi
+    if echo $line | grep "!!" > /dev/null; then 
+        comp_cmd="$(echo $line | sed 's/.*!!\(.*\)/\1/')"
+        line="${line%%!!*}"
+    else
+        comp_cmd=""
+    fi
+
+
     word_list="${line%%::*}"
     word_list=${word_list//[/ [ }
     word_list=${word_list//]/ ] }
@@ -212,7 +227,8 @@ while IFS= read -r line ; do
       elif [[ "${word:0:1}" == "(" ]]; then
         shortcut=${word/(/}
         shortcut=${shortcut/)/}
-        echo 'alias @'${shortcut}'="'$cli_name $shortcut'"' >> $cli_name.alias
+        alias_list+=$'\n'"alias @${shortcut}='$cli_name $shortcut'"
+        alias_name_list+="@${shortcut} "
       else
         let word_count=word_count+1
         key_words="$key_words $word"
@@ -228,6 +244,14 @@ while IFS= read -r line ; do
       cmd=${cmd:1}
     done
 
+    # Generate the auto complete option if one specified
+    if [[ "$comp_cmd" != "" ]]; then
+        comp_option_list+='
+        if [[ "$all" == "'$key_words'" || "$prev" == "'$shortcut'" || "$prev" == "@'$shortcut'" ]]; then
+            COMPREPLY=( $(compgen -W "$('$comp_cmd')" -- "$cur") )
+        fi'
+    fi
+
     debug "- $key_words ($shortcut)"
 
     echo "if [[ \"$key_word_template\" == \"$key_words\" || \""'$1'"\" == \"$shortcut\" ]]; then"  >> $cli_name
@@ -241,7 +265,7 @@ while IFS= read -r line ; do
     echo "   exit"  >> $cli_name
     echo "fi"  >> $cli_name
   fi
-done
+done < <(echo "$defns")
 
 echo '
 if [[ "$1" == "" ]]; then
@@ -254,4 +278,36 @@ echo "Try \"'$cli_name' help\" for more information."
 
 chmod +x $cli_name
 
-cp $cli_name.alias ~
+echo '# Completion function
+
+_'$cli_name'_complete() {
+    local cur prev all
+    all=""
+    for ((i = 1; i < ${#COMP_WORDS[@]}; i++)); do
+        word="${COMP_WORDS[i]}"
+        if [[ $word != -* ]]; then
+            all+="$word "
+        fi
+    done
+    all="$(echo $all | xargs)"
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev_step=1
+    prev="${COMP_WORDS[COMP_CWORD-$prev_step]}"
+    while [[ "${prev:0:1}" == "-" ]]; do
+        let prev_step=prev_step+1
+        prev="${COMP_WORDS[COMP_CWORD-$prev_step]}"
+    done
+
+    # options
+    '"$comp_option_list"'
+}
+complete -F _'$cli_name'_complete '$cli_name' '$alias_name_list'
+' > $cli_name.alias
+
+
+echo '# Shortcut aliases' >> $cli_name.alias
+echo "$alias_list" >> $cli_name.alias
+
+    # if [[ "$prev" == "dsh" || "$prev" == "@dsh" ]]; then
+    #     COMPREPLY=( $(compgen -W "$(docker ps --all --format '{{.Names}}')" -- "$cur") )
+    # fi

@@ -1,19 +1,51 @@
+# Completion function
+
+_dc_complete() {
+    local cur prev all
+    all=""
+    for ((i = 1; i < ${#COMP_WORDS[@]}; i++)); do
+        word="${COMP_WORDS[i]}"
+        if [[ $word != -* ]]; then
+            all+="$word "
+        fi
+    done
+    all="$(echo $all | xargs)"
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev_step=1
+    prev="${COMP_WORDS[COMP_CWORD-$prev_step]}"
+    while [[ "${prev:0:1}" == "-" ]]; do
+        let prev_step=prev_step+1
+        prev="${COMP_WORDS[COMP_CWORD-$prev_step]}"
+    done
+
+    # options
+    
+        if [[ "$all" == "restart container" || "$prev" == "dre" || "$prev" == "@dre" ]]; then
+            COMPREPLY=( $(compgen -W "$( docker ps --all --format '{{.Names}}')" -- "$cur") )
+        fi
+        if [[ "$all" == "shell" || "$prev" == "dsh" || "$prev" == "@dsh" ]]; then
+            COMPREPLY=( $(compgen -W "$( docker ps --all --format '{{.Names}}')" -- "$cur") )
+        fi
+}
+complete -F _dc_complete dc @drm @dps @dlo @dpu @dmv @dre @dru @dsh @dst @ds @dso @dcdo @dcre @dcup @dln @dpn @drn @dhe 
+
 # Shortcut aliases
-alias @drm="dc drm"
-alias @dps="dc dps"
-alias @dlo="dc dlo"
-alias @dpu="dc dpu"
-alias @dmv="dc dmv"
-alias @dre="dc dre"
-alias @dru="dc dru"
-alias @dsh="dc dsh"
-alias @dst="dc dst"
-alias @ds="dc ds"
-alias @dso="dc dso"
-alias @dcdo="dc dcdo"
-alias @dcre="dc dcre"
-alias @dcup="dc dcup"
-alias @dln="dc dln"
-alias @dpn="dc dpn"
-alias @drn="dc drn"
-alias @dhe="dc dhe"
+
+alias @drm='dc drm'
+alias @dps='dc dps'
+alias @dlo='dc dlo'
+alias @dpu='dc dpu'
+alias @dmv='dc dmv'
+alias @dre='dc dre'
+alias @dru='dc dru'
+alias @dsh='dc dsh'
+alias @dst='dc dst'
+alias @ds='dc ds'
+alias @dso='dc dso'
+alias @dcdo='dc dcdo'
+alias @dcre='dc dcre'
+alias @dcup='dc dcup'
+alias @dln='dc dln'
+alias @dpn='dc dpn'
+alias @drn='dc drn'
+alias @dhe='dc dhe'

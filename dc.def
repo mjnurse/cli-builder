@@ -31,7 +31,8 @@ rename container (mv) <current_name> <new_name> :: \
     docker rename $1 $2
 
 restart container (re) <container_name> :: \
-    docker restart $1
+    docker restart $1 \
+    !! docker ps --all --format '{{.Names}}'
 
 run container (ru) <source-container-name> <deployed-container-name> [-p <host-port>:<container-port>] :: \
     if [[ $3 == -p ]]; then \
@@ -40,7 +41,7 @@ run container (ru) <source-container-name> <deployed-container-name> [-p <host-p
         docker -d --name $2 $1; \
     fi
 
-shell (sh) [-s] [-r] <container_name> :: \
+shell (sh) [<-s>] [<-r>] <container_name> :: \
     tmp_shell=bash; tmp_user=""; \
     while [[ "$1" != "" ]]; do \
         case $1 in \
@@ -51,6 +52,7 @@ shell (sh) [-s] [-r] <container_name> :: \
         echo $1; shift; \ 
     done; \
     docker exec -it $tmp_user $1 $tmp_shell \
+    !! docker ps --all --format '{{.Names}}' \
     ## bash shell. -s: sh, -r: user root
 
 start container (st) [-a] <container_name> :: docker start $1
