@@ -115,3 +115,14 @@ list networks (ln) :: docker network ls
 prune networks (pn) :: docker network prune ## Remove all unusaed custom networks
 
 remove network (rn) <network-name> :: docker network rm $1 !! docker network ls --format '{{.Name}}'
+
+# -------------------------------------------------------------------------------------------------
+= SYSTEM
+# -------------------------------------------------------------------------------------------------
+
+system prune all (spa) :: \
+    read -p "THIS WILL REMOVE ALL unused containers, images, networks, and build cache (ie containers not created) - Are you sure [yN]? " yn; \
+    if [[ ${yn^} == Y ]]; then \
+        docker system prune -a; \
+    fi \
+    ## Remove ALL unused containers, images, networks, and build cache

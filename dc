@@ -188,6 +188,15 @@ if [[ "$1 $2" == "remove network" || "$1" == "drn" ]]; then
    docker network rm $1 
    exit
 fi
+section="SYSTEM"
+if [[ "$1 $2 $3" == "system prune all" || "$1" == "dspa" ]]; then
+   if [[ "$1" == "dspa" ]]; then shift; else shift 3; fi
+   usage="[95msystem prune all [96m(dspa)[97m[0m [92m # Remove ALL unused containers, images, networks, and build cache[0m"
+   check_params $# 0 "Usage: $usage"
+   print_command " read -p \"THIS WILL REMOVE ALL unused containers, images, networks, and build cache (ie containers not created) - Are you sure [yN]? \" yn; if [[ ${yn^} == Y ]]; then docker system prune -a; fi  "
+   read -p "THIS WILL REMOVE ALL unused containers, images, networks, and build cache (ie containers not created) - Are you sure [yN]? " yn; if [[ ${yn^} == Y ]]; then docker system prune -a; fi 
+   exit
+fi
 section="HELP"
 if [[ "$1" == "help" || "$1" == "dhe" ]]; then
    if [[ "$1" == "dhe" ]]; then shift; else shift 1; fi
