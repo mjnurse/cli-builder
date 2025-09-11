@@ -38,21 +38,21 @@ if [[ "$1 $2" == "delete container" || "$1" == "drm" ]]; then
    if [[ "$1" == "drm" ]]; then shift; else shift 2; fi
    usage="[95mdelete container [96m(drm)[97m <container_name>[0m "
    check_params $# 1 "Usage: $usage"
-   print_command " read -p \"Are you sure [yN]? \" yn; if [[ ${yn^} == Y ]]; then docker rm $1; fi "
-   read -p "Are you sure [yN]? " yn; if [[ ${yn^} == Y ]]; then docker rm $1; fi
+   print_command " read -p \"Are you sure [yN]? \" yn; if [[ ${yn^} == Y ]]; then docker rm $1; fi  "
+   read -p "Are you sure [yN]? " yn; if [[ ${yn^} == Y ]]; then docker rm $1; fi 
    exit
 fi
-if [[ "$1 $2 $3" == "list containers -d" || "$1" == "dps" ]]; then
-   if [[ "$1" == "dps" ]]; then shift; else shift 3; fi
-   usage="[95mlist containers [96m(dps)[97m [37m[-d][97m[0m [92m # -d: show details[0m"
+if [[ "$1 $2" == "list containers" || "$1" == "dps" ]]; then
+   if [[ "$1" == "dps" ]]; then shift; else shift 2; fi
+   usage="[95mlist containers [96m(dps)[97m [37m[<-d>][97m[0m [92m # -d: show details[0m"
    check_params $# 0 "Usage: $usage"
    print_command " if [[ $1 == -d ]]; then docker ps --all; else tmp=\"$(docker ps --all --format 'table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Size}}')\"; echo \"$tmp\" | head -n1; echo \"$tmp\" | tail -n+2 | grep 'Up [0-9]* min' | sort -k2,2; echo \"$tmp\" | tail -n+2 | grep -v 'Up [0-9]* min' | sort -k 2,2; fi  "
    if [[ $1 == -d ]]; then docker ps --all; else tmp="$(docker ps --all --format 'table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Size}}')"; echo "$tmp" | head -n1; echo "$tmp" | tail -n+2 | grep 'Up [0-9]* min' | sort -k2,2; echo "$tmp" | tail -n+2 | grep -v 'Up [0-9]* min' | sort -k 2,2; fi 
    exit
 fi
-if [[ "$1 $2" == "logs -f" || "$1" == "dlo" ]]; then
-   if [[ "$1" == "dlo" ]]; then shift; else shift 2; fi
-   usage="[95mlogs [96m(dlo)[97m [37m[-f][97m <container-name>[0m [92m # -f: follow log[0m"
+if [[ "$1" == "logs" || "$1" == "dlo" ]]; then
+   if [[ "$1" == "dlo" ]]; then shift; else shift 1; fi
+   usage="[95mlogs [96m(dlo)[97m [37m[<-f>][97m <container-name>[0m [92m # -f: follow log:q[0m"
    check_params $# 1 "Usage: $usage"
    print_command " if [[ $1 == -f ]]; then docker logs -f $2; else docker logs $1; fi  "
    if [[ $1 == -f ]]; then docker logs -f $2; else docker logs $1; fi 
@@ -70,21 +70,21 @@ if [[ "$1 $2" == "rename container" || "$1" == "dmv" ]]; then
    if [[ "$1" == "dmv" ]]; then shift; else shift 2; fi
    usage="[95mrename container [96m(dmv)[97m <current_name> <new_name>[0m "
    check_params $# 2 "Usage: $usage"
-   print_command " docker rename $1 $2 "
-   docker rename $1 $2
+   print_command " docker rename $1 $2  "
+   docker rename $1 $2 
    exit
 fi
 if [[ "$1 $2" == "restart container" || "$1" == "dre" ]]; then
    if [[ "$1" == "dre" ]]; then shift; else shift 2; fi
    usage="[95mrestart container [96m(dre)[97m <container_name>[0m "
    check_params $# 1 "Usage: $usage"
-   print_command " docker restart $1 !! docker ps --all --format '{{.Names}}' "
-   docker restart $1 !! docker ps --all --format '{{.Names}}'
+   print_command " docker restart $1  "
+   docker restart $1 
    exit
 fi
-if [[ "$1 $2 $3" == "run container -p" || "$1" == "dru" ]]; then
+if [[ "$1 $2 $3" == "run container host-port:container-port>" || "$1" == "dru" ]]; then
    if [[ "$1" == "dru" ]]; then shift; else shift 3; fi
-   usage="[95mrun container [96m(dru)[97m <source-container-name> <deployed-container-name> [37m[-p <host-port>:<container-port>][97m[0m "
+   usage="[95mrun container [96m(dru)[97m <source-container-name> <deployed-container-name> [37m[<-p host-port:container-port>][97m[0m "
    check_params $# 2 "Usage: $usage"
    print_command " if [[ $3 == -p ]]; then docker run -d $3 $4 $5 $6 --name $2 $1; else docker -d --name $2 $1; fi "
    if [[ $3 == -p ]]; then docker run -d $3 $4 $5 $6 --name $2 $1; else docker -d --name $2 $1; fi
@@ -94,13 +94,13 @@ if [[ "$1" == "shell" || "$1" == "dsh" ]]; then
    if [[ "$1" == "dsh" ]]; then shift; else shift 1; fi
    usage="[95mshell [96m(dsh)[97m [37m[<-s>][97m [37m[<-r>][97m <container_name>[0m [92m # bash shell. -s: sh, -r: user root[0m"
    check_params $# 1 "Usage: $usage"
-   print_command " tmp_shell=bash; tmp_user=\"\"; while [[ \"$1\" != \"\" ]]; do case $1 in -s) tmp_shell=sh;; -r) tmp_user=\"--user root\";; *) break;; esac; echo $1; shift; done; docker exec -it $tmp_user $1 $tmp_shell !! docker ps --all --format '{{.Names}}'  "
-   tmp_shell=bash; tmp_user=""; while [[ "$1" != "" ]]; do case $1 in -s) tmp_shell=sh;; -r) tmp_user="--user root";; *) break;; esac; echo $1; shift; done; docker exec -it $tmp_user $1 $tmp_shell !! docker ps --all --format '{{.Names}}' 
+   print_command " tmp_shell=bash; tmp_user=\"\"; while [[ \"$1\" != \"\" ]]; do case $1 in -s) tmp_shell=sh;; -r) tmp_user=\"--user root\";; *) break;; esac; echo $1; shift; done; docker exec -it $tmp_user $1 $tmp_shell  "
+   tmp_shell=bash; tmp_user=""; while [[ "$1" != "" ]]; do case $1 in -s) tmp_shell=sh;; -r) tmp_user="--user root";; *) break;; esac; echo $1; shift; done; docker exec -it $tmp_user $1 $tmp_shell 
    exit
 fi
-if [[ "$1 $2 $3" == "start container -a" || "$1" == "dst" ]]; then
-   if [[ "$1" == "dst" ]]; then shift; else shift 3; fi
-   usage="[95mstart container [96m(dst)[97m [37m[-a][97m <container_name>[0m "
+if [[ "$1 $2" == "start container" || "$1" == "dst" ]]; then
+   if [[ "$1" == "dst" ]]; then shift; else shift 2; fi
+   usage="[95mstart container [96m(dst)[97m [37m[<-a>][97m <container_name>[0m "
    check_params $# 1 "Usage: $usage"
    print_command " docker start $1 "
    docker start $1
@@ -114,9 +114,9 @@ if [[ "$1" == "stats" || "$1" == "ds" ]]; then
    docker stats
    exit
 fi
-if [[ "$1 $2 $3" == "stop container -a" || "$1" == "dso" ]]; then
-   if [[ "$1" == "dso" ]]; then shift; else shift 3; fi
-   usage="[95mstop container [96m(dso)[97m [37m[-a][97m <container_name>[0m [92m # -a: Stop all containers[0m"
+if [[ "$1 $2" == "stop container" || "$1" == "dso" ]]; then
+   if [[ "$1" == "dso" ]]; then shift; else shift 2; fi
+   usage="[95mstop container [96m(dso)[97m [37m[<-a>][97m <container_name>[0m [92m # -a: Stop all containers[0m"
    check_params $# 1 "Usage: $usage"
    print_command " if [[ $1 == -a ]]; then conts=\"$(docker ps -q)\"; if [[ \"$conts\" != \"\" ]]; then docker stop $conts; fi; else docker stop $1; fi  "
    if [[ $1 == -a ]]; then conts="$(docker ps -q)"; if [[ "$conts" != "" ]]; then docker stop $conts; fi; else docker stop $1; fi 
@@ -131,12 +131,28 @@ if [[ "$1 $2" == "compose down" || "$1" == "dcdo" ]]; then
    if [[ "$1" == "" ]]; then docker compose down; else docker compose -f $1 down; fi; 
    exit
 fi
+if [[ "$1 $2" == "compose list" || "$1" == "dcls" ]]; then
+   if [[ "$1" == "dcls" ]]; then shift; else shift 2; fi
+   usage="[95mcompose list [96m(dcls)[97m[0m "
+   check_params $# 0 "Usage: $usage"
+   print_command " docker compose ls "
+   docker compose ls
+   exit
+fi
 if [[ "$1 $2" == "compose restart" || "$1" == "dcre" ]]; then
    if [[ "$1" == "dcre" ]]; then shift; else shift 2; fi
    usage="[95mcompose restart [96m(dcre)[97m [37m[<service>][97m[0m [92m # Restart all containers[0m"
    check_params $# 0 "Usage: $usage"
    print_command " if [[ \"$1\" == \"\" ]]; then docker compose restart; else docker compose -f $1 restart; fi;  "
    if [[ "$1" == "" ]]; then docker compose restart; else docker compose -f $1 restart; fi; 
+   exit
+fi
+if [[ "$1 $2" == "compose top" || "$1" == "dct" ]]; then
+   if [[ "$1" == "dct" ]]; then shift; else shift 2; fi
+   usage="[95mcompose top [96m(dct)[97m[0m "
+   check_params $# 0 "Usage: $usage"
+   print_command " docker compose top "
+   docker compose top
    exit
 fi
 if [[ "$1 $2" == "compose up" || "$1" == "dcup" ]]; then
@@ -168,8 +184,8 @@ if [[ "$1 $2" == "remove network" || "$1" == "drn" ]]; then
    if [[ "$1" == "drn" ]]; then shift; else shift 2; fi
    usage="[95mremove network [96m(drn)[97m <network-name>[0m "
    check_params $# 1 "Usage: $usage"
-   print_command " docker network rm $1 "
-   docker network rm $1
+   print_command " docker network rm $1  "
+   docker network rm $1 
    exit
 fi
 section="HELP"

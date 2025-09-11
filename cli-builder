@@ -27,7 +27,14 @@ DESCRIPTION
   = - a line starting with a = is a group description for the set of commands following this
       line up until the next line starting with a = or the end of the file.
 
-  ( / - is the line continuation character.  Any line ending / is joined to the next line. )
+  !! - commands following !! are command line completion commands.  The command must return a list of
+        words which are used to complete the command.  The command is run when the current or
+        previous word matches the command name or shortcut.
+
+  ## - text following ## is a help description for the command.  This text is shown when
+        the help command is run.
+
+  ( \ - is the line continuation character.  Any line ending \ is joined to the next line. )
 
   All other lines in the file are command definitions.  These lines are structured as follows:
 
@@ -183,7 +190,7 @@ while IFS= read -r line ; do
   elif [[ "${line:0:4}" == "cmd " ]]; then
     echo "${line:4:99999}" >> $cli_name
   elif [[ "$line" != "" ]]; then
-    cmd="$(echo $line | sed 's/^.*:://; s/##.*//')"
+    cmd="$(echo $line | sed 's/^.*:://; s/##.*//; s/!!.*//')"
     usage="$(echo ${line%% ::*} | sed "s/\[/\x1b[37m\[/g; s/\]/\]$CWHI/g; s/^/$CMAG/; s/(/$CCYA(/; s/)/)$CWHI/; s/$/$CDEF/")"
     if echo $line | grep "##" > /dev/null; then 
         help="$(echo $line | sed "s/^.*## */$CGRE # /; s/$/\x1b[0m/")"
@@ -197,7 +204,6 @@ while IFS= read -r line ; do
     else
         comp_cmd=""
     fi
-
 
     word_list="${line%%::*}"
     word_list=${word_list//[/ [ }

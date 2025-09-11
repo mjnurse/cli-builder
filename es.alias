@@ -1,55 +1,82 @@
+# Completion function
+
+_es_complete() {
+    local cur prev all
+    all=""
+    for ((i = 1; i < ${#COMP_WORDS[@]}; i++)); do
+        word="${COMP_WORDS[i]}"
+        if [[ $word != -* ]]; then
+            all+="$word "
+        fi
+    done
+    all="$(echo $all | xargs)"
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev_step=1
+    prev="${COMP_WORDS[COMP_CWORD-$prev_step]}"
+    while [[ "${prev:0:1}" == "-" ]]; do
+        let prev_step=prev_step+1
+        prev="${COMP_WORDS[COMP_CWORD-$prev_step]}"
+    done
+
+    # options
+    
+}
+complete -F _es_complete es @ecc @eco @ech @ecs @ec @ela @eli @els @elsd @ele @elss @egim @elus @efmp @eaita @erifa @eci @ecifm @eclni @edi @eopi @ecli @eero @eerw @eri @ems @eanr @edsa @ersa @efm @er @eae @eln @elnq @esn @eat @es @esj @esm @est @ess @esql @elt @eltd @eare @edre @elre @ecsn @edsn @elsn @esnd @ersn @eg @eqes @ehe 
+
 # Shortcut aliases
-alias @ecc="es ecc"
-alias @eco="es eco"
-alias @ech="es ech"
-alias @ecs="es ecs"
-alias @ec="es ec"
-alias @ela="es ela"
-alias @eli="es eli"
-alias @els="es els"
-alias @elsd="es elsd"
-alias @ele="es ele"
-alias @elss="es elss"
-alias @egim="es egim"
-alias @elus="es elus"
-alias @efmp="es efmp"
-alias @eaita="es eaita"
-alias @erifa="es erifa"
-alias @eci="es eci"
-alias @ecifm="es ecifm"
-alias @eclni="es eclni"
-alias @edi="es edi"
-alias @eopi="es eopi"
-alias @ecli="es ecli"
-alias @eero="es eero"
-alias @eerw="es eerw"
-alias @eri="es eri"
-alias @ems="es ems"
-alias @eanr="es eanr"
-alias @edsa="es edsa"
-alias @ersa="es ersa"
-alias @efm="es efm"
-alias @er="es er"
-alias @eae="es eae"
-alias @eln="es eln"
-alias @elnq="es elnq"
-alias @esn="es esn"
-alias @eat="es eat"
-alias @es="es es"
-alias @esj="es esj"
-alias @esm="es esm"
-alias @est="es est"
-alias @ess="es ess"
-alias @elt="es elt"
-alias @eltd="es eltd"
-alias @eare="es eare"
-alias @edre="es edre"
-alias @elre="es elre"
-alias @ecsn="es ecsn"
-alias @edsn="es edsn"
-alias @elsn="es elsn"
-alias @esnd="es esnd"
-alias @ersn="es ersn"
-alias @eg="es eg"
-alias @eqes="es eqes"
-alias @ehe="es ehe"
+
+alias @ecc='es ecc'
+alias @eco='es eco'
+alias @ech='es ech'
+alias @ecs='es ecs'
+alias @ec='es ec'
+alias @ela='es ela'
+alias @eli='es eli'
+alias @els='es els'
+alias @elsd='es elsd'
+alias @ele='es ele'
+alias @elss='es elss'
+alias @egim='es egim'
+alias @elus='es elus'
+alias @efmp='es efmp'
+alias @eaita='es eaita'
+alias @erifa='es erifa'
+alias @eci='es eci'
+alias @ecifm='es ecifm'
+alias @eclni='es eclni'
+alias @edi='es edi'
+alias @eopi='es eopi'
+alias @ecli='es ecli'
+alias @eero='es eero'
+alias @eerw='es eerw'
+alias @eri='es eri'
+alias @ems='es ems'
+alias @eanr='es eanr'
+alias @edsa='es edsa'
+alias @ersa='es ersa'
+alias @efm='es efm'
+alias @er='es er'
+alias @eae='es eae'
+alias @eln='es eln'
+alias @elnq='es elnq'
+alias @esn='es esn'
+alias @eat='es eat'
+alias @es='es es'
+alias @esj='es esj'
+alias @esm='es esm'
+alias @est='es est'
+alias @ess='es ess'
+alias @esql='es esql'
+alias @elt='es elt'
+alias @eltd='es eltd'
+alias @eare='es eare'
+alias @edre='es edre'
+alias @elre='es elre'
+alias @ecsn='es ecsn'
+alias @edsn='es edsn'
+alias @elsn='es elsn'
+alias @esnd='es esnd'
+alias @ersn='es ersn'
+alias @eg='es eg'
+alias @eqes='es eqes'
+alias @ehe='es ehe'

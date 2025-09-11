@@ -8,9 +8,10 @@ delete container (rm) <container_name> :: \
     read -p "Are you sure [yN]? " yn; \
     if [[ ${yn^} == Y ]]; then \
         docker rm $1; \
-    fi
+    fi \
+    !! docker ps --all --format '{{.Names}}' \
 
-list containers (ps) [-d] :: \
+list containers (ps) [<-d>] :: \
     if [[ $1 == -d ]]; then docker ps --all; \ 
     else \
         tmp="$(docker ps --all --format 'table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Size}}')"; \
@@ -20,21 +21,23 @@ list containers (ps) [-d] :: \
     fi \
     ## -d: show details
 
-logs (lo) [-f] <container-name> :: \
+logs (lo) [<-f>] <container-name> :: \
     if [[ $1 == -f ]]; then docker logs -f $2; else docker logs $1; fi \
-    ## -f: follow log
+    !! docker ps --all --format '{{.Names}}' \
+    ## -f: follow log:q
 
 pull container (pu) <container_name> :: \
     docker pull $1
 
 rename container (mv) <current_name> <new_name> :: \
-    docker rename $1 $2
+    docker rename $1 $2 \
+    !! docker ps --all --format '{{.Names}}'
 
 restart container (re) <container_name> :: \
     docker restart $1 \
     !! docker ps --all --format '{{.Names}}'
 
-run container (ru) <source-container-name> <deployed-container-name> [-p <host-port>:<container-port>] :: \
+run container (ru) <source-container-name> <deployed-container-name> [<-p host-port:container-port>] :: \
     if [[ $3 == -p ]]; then \
         docker run -d $3 $4 $5 $6 --name $2 $1; \
     else \
@@ -55,11 +58,11 @@ shell (sh) [<-s>] [<-r>] <container_name> :: \
     !! docker ps --all --format '{{.Names}}' \
     ## bash shell. -s: sh, -r: user root
 
-start container (st) [-a] <container_name> :: docker start $1
+start container (st) [<-a>] <container_name> :: docker start $1
 
 stats (s) :: docker stats
 
-stop container (so) [-a] <container_name> :: \
+stop container (so) [<-a>] <container_name> :: \
     if [[ $1 == -a ]]; then \
         conts="$(docker ps -q)"; \
         if [[ "$conts" != "" ]]; then \
@@ -68,6 +71,7 @@ stop container (so) [-a] <container_name> :: \
     else \
         docker stop $1; \
     fi \
+    !! docker ps --all --format '{{.Names}}' \
     ## -a: Stop all containers
 
 # -------------------------------------------------------------------------------------------------
@@ -82,6 +86,8 @@ compose down (cdo) [<service>] :: \
     fi; \
     ## Stop and remove containers, networks
 
+compose list (cls) :: docker compose ls
+
 compose restart (cre) [<service>] :: \
     if [[ "$1" == "" ]]; then \
         docker compose restart; \
@@ -89,6 +95,8 @@ compose restart (cre) [<service>] :: \
         docker compose -f $1 restart; \
     fi; \
     ## Restart all containers
+
+compose top (ct) :: docker compose top
 
 compose up (cup) [<service>] :: \
     if [[ "$1" == "" ]]; then \
@@ -106,4 +114,4 @@ list networks (ln) :: docker network ls
 
 prune networks (pn) :: docker network prune ## Remove all unusaed custom networks
 
-remove network (rn) <network-name> :: docker network rm $1
+remove network (rn) <network-name> :: docker network rm $1 !! docker network ls --format '{{.Name}}'

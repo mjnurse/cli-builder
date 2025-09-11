@@ -20,14 +20,29 @@ _dc_complete() {
 
     # options
     
+        if [[ "$all" == "delete container" || "$prev" == "drm" || "$prev" == "@drm" ]]; then
+            COMPREPLY=( $(compgen -W "$( docker ps --all --format '{{.Names}}')" -- "$cur") )
+        fi
+        if [[ "$all" == "logs" || "$prev" == "dlo" || "$prev" == "@dlo" ]]; then
+            COMPREPLY=( $(compgen -W "$( docker ps --all --format '{{.Names}}')" -- "$cur") )
+        fi
+        if [[ "$all" == "rename container" || "$prev" == "dmv" || "$prev" == "@dmv" ]]; then
+            COMPREPLY=( $(compgen -W "$( docker ps --all --format '{{.Names}}')" -- "$cur") )
+        fi
         if [[ "$all" == "restart container" || "$prev" == "dre" || "$prev" == "@dre" ]]; then
             COMPREPLY=( $(compgen -W "$( docker ps --all --format '{{.Names}}')" -- "$cur") )
         fi
         if [[ "$all" == "shell" || "$prev" == "dsh" || "$prev" == "@dsh" ]]; then
             COMPREPLY=( $(compgen -W "$( docker ps --all --format '{{.Names}}')" -- "$cur") )
         fi
+        if [[ "$all" == "stop container" || "$prev" == "dso" || "$prev" == "@dso" ]]; then
+            COMPREPLY=( $(compgen -W "$( docker ps --all --format '{{.Names}}')" -- "$cur") )
+        fi
+        if [[ "$all" == "remove network" || "$prev" == "drn" || "$prev" == "@drn" ]]; then
+            COMPREPLY=( $(compgen -W "$( docker network ls --format '{{.Name}}')" -- "$cur") )
+        fi
 }
-complete -F _dc_complete dc @drm @dps @dlo @dpu @dmv @dre @dru @dsh @dst @ds @dso @dcdo @dcre @dcup @dln @dpn @drn @dhe 
+complete -F _dc_complete dc @drm @dps @dlo @dpu @dmv @dre @dru @dsh @dst @ds @dso @dcdo @dcls @dcre @dct @dcup @dln @dpn @drn @dhe 
 
 # Shortcut aliases
 
@@ -43,7 +58,9 @@ alias @dst='dc dst'
 alias @ds='dc ds'
 alias @dso='dc dso'
 alias @dcdo='dc dcdo'
+alias @dcls='dc dcls'
 alias @dcre='dc dcre'
+alias @dct='dc dct'
 alias @dcup='dc dcup'
 alias @dln='dc dln'
 alias @dpn='dc dpn'
