@@ -1,10 +1,31 @@
+# Completion function
+_gi_complete() {
+    local cur prev all
+    all=""
+    for ((i = 1; i < ${#COMP_WORDS[@]}; i++)); do
+        word="${COMP_WORDS[i]}"
+        [[ $word != -* ]] && all+="$word "
+    done
+    all="$(echo $all | xargs)"
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev_step=1
+    prev="${COMP_WORDS[COMP_CWORD-$prev_step]}"
+    while [[ "${prev:0:1}" == "-" ]]; do
+        let prev_step=prev_step+1
+        prev="${COMP_WORDS[COMP_CWORD-$prev_step]}"
+    done
+
+}
+complete -F _gi_complete gi @ghe @glb @glbr @gc @gf @gh @gpu @gp @g @gsb
+
 # Shortcut aliases
-alias @glbl="gi glbl"
-alias @glbr="gi glbr"
-alias @gc="gi gc"
-alias @gh="gi gh"
-alias @gpu="gi gpu"
-alias @gp="gi gp"
-alias @gs="gi gs"
-alias @gsb="gi gsb"
-alias @ghe="gi ghe"
+alias @ghe='gi ghe'
+alias @glbl='gi glbl'
+alias @glbr='gi glbr'
+alias @gc='gi gc'
+alias @gf='gi gf'
+alias @gh='gi gh'
+alias @gpu='gi gpu'
+alias @gp='gi gp'
+alias @gs='gi gs'
+alias @gsb='gi gsb'

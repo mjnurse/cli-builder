@@ -1,4 +1,4 @@
-# Postgres PSQL
+@ Postgres PSQL
 
 cmd [ -f ./pg_conn_defaults ] && source ./pg_conn_defaults
 
@@ -139,3 +139,11 @@ cmd sq=" \
 search dictionary (sd) <db_name> <search_term> :: \
     psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c "${sq//SEARCHTERM/$2}" \
     ## % matches multiple chars (inc. none), _ matches a single char
+
+# -------------------------------------------------------------------------------------------------
+= QUERY
+# -------------------------------------------------------------------------------------------------
+
+select all (sa) <db_name> [<schema_name>] <table_name> :: \
+    if [[ "$3" == "" ]]; then tn="\"$2\""; sn=""; else tn="\"$3\""; sn="\"$2\"."; fi; \
+    psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c 'SELECT * FROM '${sn}${tn}

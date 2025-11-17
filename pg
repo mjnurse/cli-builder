@@ -1,38 +1,37 @@
 #!/bin/bash
-
 debug_yn=n
-if [[ "$1" == "-d" ]]; then
-  debug_yn=y
-  shift
-fi
-if [[ "${CLI_DEBUG^^}" == "TRUE" ]]; then
-  debug_yn=y
-fi
+[[ "$1" == "-d" ]] && { debug_yn=y; shift; }
+[[ "${CLI_DEBUG^^}" == "TRUE" ]] && debug_yn=y
 
-l80="--------------------------------------------------------------------------------"
+C_CYA="\x1b[96m" C_GRE="\x1b[92m" C_MAG="\x1b[95m" C_WHI="\x1b[97m" C_DEF="\x1b[0m"
 
-
-function check_params() {
-  # param 1 - actual number of parameters
-  # param 2 - required number of parameters
-  # param 3 - incorrect parameters message
-
-  if [[ "$1" < "$2" ]]; then
-    echo "$3"
-    exit
-  fi
+# param 1 - actual number of parameters
+# param 2 - required number of parameters
+# param 3 - incorrect parameters message
+check_params() {
+  [[ "$1" < "$2" ]] && { echo -e "$3"; exit; }
 }
 
-function print_command() {
-  # param 1 - command
-
-  if [[ $debug_yn == y ]]; then
-    echo "COMMAND: $*" | sed 's/./-/g'
-    echo "COMMAND: $*" | sed 's/"/\"/g'
-    echo "COMMAND: $*" | sed 's/./-/g'
-  fi
+print_command() {
+  [[ $debug_yn == y ]] && { echo "COMMAND: $*" | sed 's/"/\"/g'; echo "COMMAND: $*" | sed 's/./-/g'; }
 }
+section="HELP"
 
+if [[ "$1" == "help" || "$1" == "phe" ]]; then
+   [[ "$1" == "phe" ]] && shift || shift 1
+   usage="\x1b[95mhelp \x1b[96m(phe)\x1b[97m\x1b[0m"
+   check_params $# 0 "Usage: $usage"
+   
+echo -e "\x1b[92m-------------\x1b[0m"
+echo -e "\x1b[92mPostgres PSQL\x1b[0m"
+echo -e "\x1b[92m-------------\x1b[0m"
+
+echo -e "\x1b[92mgen:2025-11-14 17:28\x1b[0m"
+echo
+
+            while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/[92m/; s/\"//g")
+   exit
+fi
 [ -f ./pg_conn_defaults ] && source ./pg_conn_defaults
 PG_HOST="${PG_HOST:-127.0.0.1}"
 PG_PORT="${PG_PORT:-5431}"
@@ -42,81 +41,91 @@ PG_PASSWORD="${PG_PASSWORD:-postgres}"
 export PGPASSWORD="$PG_PASSWORD"
 export PAGER=cat
 section="SESSION"
+
 if [[ "$1" == "connect" || "$1" == "pc" ]]; then
-   if [[ "$1" == "pc" ]]; then shift; else shift 1; fi
-   usage="[95mconnect [96m(pc)[97m [37m[<db_name>][97m[0m "
+   [[ "$1" == "pc" ]] && shift || shift 1
+   usage="\x1b[95mconnect \x1b[96m(pc)\x1b[97m \x1b[0m[<db_name>]\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
-   print_command " psql --host $PG_HOST -p $PG_PORT -d ${1:-$PG_DB} -U $PG_USER "
+   print_command " psql --host $PG_HOST -p $PG_PORT -d ${1:-$PG_DB} -U $PG_USER"
    psql --host $PG_HOST -p $PG_PORT -d ${1:-$PG_DB} -U $PG_USER
    exit
 fi
+
 if [[ "$1 $2 $3" == "set connection defaults" || "$1" == "pscd" ]]; then
-   if [[ "$1" == "pscd" ]]; then shift; else shift 3; fi
-   usage="[95mset connection defaults [96m(pscd)[97m <host> <port> <db_name> <username> <password>[0m "
+   [[ "$1" == "pscd" ]] && shift || shift 3
+   usage="\x1b[95mset connection defaults \x1b[96m(pscd)\x1b[97m <host> <port> <db_name> <username> <password>\x1b[0m"
    check_params $# 5 "Usage: $usage"
-   print_command " echo \"# Created: $(date)\" > ./pg_conn_defaults; echo \"export PG_HOST=\\"$1\\"\" >> ./pg_conn_defaults; echo \"export PG_PORT=\\"$2\\"\" >> ./pg_conn_defaults; echo \"export PG_DB=\\"$3\\"\" >> ./pg_conn_defaults; echo \"export PG_USER=\\"$4\\"\" >> ./pg_conn_defaults; echo \"export PG_password=\\"$5\\"\" >> ./pg_conn_defaults "
+   print_command " echo \"# Created: $(date)\" > ./pg_conn_defaults; echo \"export PG_HOST=\\"$1\\"\" >> ./pg_conn_defaults; echo \"export PG_PORT=\\"$2\\"\" >> ./pg_conn_defaults; echo \"export PG_DB=\\"$3\\"\" >> ./pg_conn_defaults; echo \"export PG_USER=\\"$4\\"\" >> ./pg_conn_defaults; echo \"export PG_password=\\"$5\\"\" >> ./pg_conn_defaults"
    echo "# Created: $(date)" > ./pg_conn_defaults; echo "export PG_HOST=\"$1\"" >> ./pg_conn_defaults; echo "export PG_PORT=\"$2\"" >> ./pg_conn_defaults; echo "export PG_DB=\"$3\"" >> ./pg_conn_defaults; echo "export PG_USER=\"$4\"" >> ./pg_conn_defaults; echo "export PG_password=\"$5\"" >> ./pg_conn_defaults
    exit
 fi
 section="DICTIONARY"
+
 if [[ "$1" == "describe" || "$1" == "pd" ]]; then
-   if [[ "$1" == "pd" ]]; then shift; else shift 1; fi
-   usage="[95mdescribe [96m(pd)[97m <db_name> <schema_name> <object_name>[0m "
+   [[ "$1" == "pd" ]] && shift || shift 1
+   usage="\x1b[95mdescribe \x1b[96m(pd)\x1b[97m <db_name> <schema_name> <object_name>\x1b[0m"
    check_params $# 3 "Usage: $usage"
-   print_command " psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c \"\d \\"$2\\".\\"$3\\"\" "
+   print_command " psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c \"\d \\"$2\\".\\"$3\\"\""
    psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c "\d \"$2\".\"$3\""
    exit
 fi
+
 if [[ "$1 $2" == "list databases" || "$1" == "pld" ]]; then
-   if [[ "$1" == "pld" ]]; then shift; else shift 2; fi
-   usage="[95mlist databases [96m(pld)[97m[0m "
+   [[ "$1" == "pld" ]] && shift || shift 2
+   usage="\x1b[95mlist databases \x1b[96m(pld)\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
-   print_command " psql --host $PG_HOST -p $PG_PORT -d $PG_DB -U $PG_USER -c \"\l\" "
+   print_command " psql --host $PG_HOST -p $PG_PORT -d $PG_DB -U $PG_USER -c \"\l\""
    psql --host $PG_HOST -p $PG_PORT -d $PG_DB -U $PG_USER -c "\l"
    exit
 fi
 iq=" SELECT n.nspname AS schema_name, c.relname AS index_name, t.relname AS table_name, r.rolname AS owner, pg_size_pretty(pg_relation_size(c.oid)) AS index_size FROM pg_class c JOIN pg_index i ON c.oid = i.indexrelid JOIN pg_class t ON i.indrelid = t.oid JOIN pg_namespace n ON n.oid = c.relnamespace JOIN pg_roles r ON r.oid = c.relowner WHERE c.relkind = 'i' AND n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast') AND (LOWER(n.nspname) = LOWER('SCHEMANAME') OR 'SCHEMANAME' = '') ORDER BY 1, 2"
+
 if [[ "$1 $2" == "list indices" || "$1" == "pli" ]]; then
-   if [[ "$1" == "pli" ]]; then shift; else shift 2; fi
-   usage="[95mlist indices [96m(pli)[97m <db_name> [37m[<schema_name>][97m[0m "
+   [[ "$1" == "pli" ]] && shift || shift 2
+   usage="\x1b[95mlist indices \x1b[96m(pli)\x1b[97m <db_name> \x1b[0m[<schema_name>]\x1b[97m\x1b[0m"
    check_params $# 1 "Usage: $usage"
-   print_command " psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c \"${iq//SCHEMANAME/$2}\"; "
+   print_command " psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c \"${iq//SCHEMANAME/$2}\";"
    psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c "${iq//SCHEMANAME/$2}";
    exit
 fi
 sq=" SELECT n.nspname AS schema_name, r.rolname AS owner, pg_size_pretty(SUM(pg_total_relation_size(c.oid))) AS total_size FROM pg_namespace n JOIN pg_roles r ON r.oid = n.nspowner LEFT JOIN pg_class c ON c.relnamespace = n.oid AND c.relkind IN ('r', 'i', 't', 'm') WHERE n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast') GROUP BY n.nspname, r.rolname ORDER BY 1, 2"
+
 if [[ "$1 $2" == "list schema" || "$1" == "pls" ]]; then
-   if [[ "$1" == "pls" ]]; then shift; else shift 2; fi
-   usage="[95mlist schema [96m(pls)[97m [37m[<db_name>][97m[0m "
+   [[ "$1" == "pls" ]] && shift || shift 2
+   usage="\x1b[95mlist schema \x1b[96m(pls)\x1b[97m \x1b[0m[<db_name>]\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
-   print_command " echo \"DATABASE: ${1:-$PG_DB}\"; psql --host $PG_HOST -p $PG_PORT -d ${1:-$PG_DB} -U $PG_USER -c \"${sq}\"; "
+   print_command " echo \"DATABASE: ${1:-$PG_DB}\"; psql --host $PG_HOST -p $PG_PORT -d ${1:-$PG_DB} -U $PG_USER -c \"${sq}\";"
    echo "DATABASE: ${1:-$PG_DB}"; psql --host $PG_HOST -p $PG_PORT -d ${1:-$PG_DB} -U $PG_USER -c "${sq}";
    exit
 fi
 tq=" SELECT n.nspname AS schema_name, c.relname AS table_name, r.rolname AS owner, pg_size_pretty(pg_total_relation_size(c.oid)) AS total_size FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace JOIN pg_roles r ON r.oid = c.relowner WHERE c.relkind = 'r' AND n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast') AND (LOWER(n.nspname) = LOWER('SCHEMANAME') OR 'SCHEMANAME' = '') ORDER BY 1, 2"
+
 if [[ "$1 $2" == "list tables" || "$1" == "plt" ]]; then
-   if [[ "$1" == "plt" ]]; then shift; else shift 2; fi
-   usage="[95mlist tables [96m(plt)[97m <db_name> [37m[<schema_name>][97m[0m "
+   [[ "$1" == "plt" ]] && shift || shift 2
+   usage="\x1b[95mlist tables \x1b[96m(plt)\x1b[97m <db_name> \x1b[0m[<schema_name>]\x1b[97m\x1b[0m"
    check_params $# 1 "Usage: $usage"
-   print_command " psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c \"${tq//SCHEMANAME/$2}\" "
+   print_command " psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c \"${tq//SCHEMANAME/$2}\""
    psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c "${tq//SCHEMANAME/$2}"
    exit
 fi
 sq=" SELECT CASE c.relkind WHEN 'r' THEN 'table' WHEN 'S' THEN 'sequence' WHEN 'i' THEN 'index' WHEN 'v' THEN 'view' WHEN 'm' THEN 'materialised view' ELSE c.relkind::TEXT END AS object_type, n.nspname AS schema, c.relname AS name FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE (    c.relname ILIKE 'SEARCHTERM' OR n.nspname ILIKE 'SEARCHTERM' ) AND n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast') UNION ALL SELECT 'constraint' AS object_type, n.nspname AS schema, con.conname AS name FROM pg_constraint con JOIN pg_namespace n ON n.oid = con.connamespace WHERE (    con.conname ILIKE 'SEARCHTERM' OR n.nspname ILIKE 'SEARCHTERM' ) AND n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast') ORDER BY object_type, schema, name"
+
 if [[ "$1 $2" == "search dictionary" || "$1" == "psd" ]]; then
-   if [[ "$1" == "psd" ]]; then shift; else shift 2; fi
-   usage="[95msearch dictionary [96m(psd)[97m <db_name> <search_term>[0m [92m # % matches multiple chars (inc. none), _ matches a single char[0m"
+   [[ "$1" == "psd" ]] && shift || shift 2
+   usage="\x1b[95msearch dictionary \x1b[96m(psd)\x1b[97m <db_name> <search_term>\x1b[92m # % matches multiple chars (inc. none), _ matches a single char\x1b[0m"
    check_params $# 2 "Usage: $usage"
-   print_command " psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c \"${sq//SEARCHTERM/$2}\"  "
-   psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c "${sq//SEARCHTERM/$2}" 
+   print_command " psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c \"${sq//SEARCHTERM/$2}\""
+   psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c "${sq//SEARCHTERM/$2}"
    exit
 fi
-section="HELP"
-if [[ "$1" == "help" || "$1" == "phe" ]]; then
-   if [[ "$1" == "phe" ]]; then shift; else shift 1; fi
-   usage="[95mhelp [96m(phe)[97m[0m "
-   check_params $# 0 "Usage: $usage"
-   egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/ /; s/.*section=/\x1b[92m/; s/\"//g"
+section="QUERY"
+
+if [[ "$1 $2" == "select all" || "$1" == "psa" ]]; then
+   [[ "$1" == "psa" ]] && shift || shift 2
+   usage="\x1b[95mselect all \x1b[96m(psa)\x1b[97m <db_name> <table_name> \x1b[0m[<schema_name>]\x1b[97m\x1b[0m"
+   check_params $# 2 "Usage: $usage"
+   print_command " if [[ \"$3\" == \"\" ]]; then tn=\"\\"$2\\"\"; sn=\"\"; else tn=\"\\"$3\\"\"; sn=\"\\"$2\\".\"; fi; psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c 'SELECT * FROM '${sn}${tn}"
+   if [[ "$3" == "" ]]; then tn="\"$2\""; sn=""; else tn="\"$3\""; sn="\"$2\"."; fi; psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c 'SELECT * FROM '${sn}${tn}
    exit
 fi
 
@@ -126,4 +135,3 @@ else
   echo "$*: invalid option"
 fi
 echo "Try \"pg help\" for more information."
-

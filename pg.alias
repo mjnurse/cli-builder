@@ -1,10 +1,31 @@
+# Completion function
+_pg_complete() {
+    local cur prev all
+    all=""
+    for ((i = 1; i < ${#COMP_WORDS[@]}; i++)); do
+        word="${COMP_WORDS[i]}"
+        [[ $word != -* ]] && all+="$word "
+    done
+    all="$(echo $all | xargs)"
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev_step=1
+    prev="${COMP_WORDS[COMP_CWORD-$prev_step]}"
+    while [[ "${prev:0:1}" == "-" ]]; do
+        let prev_step=prev_step+1
+        prev="${COMP_WORDS[COMP_CWORD-$prev_step]}"
+    done
+
+}
+complete -F _pg_complete pg @phe @pc @pscd @pd @pld @p @p @plt @psd @p
+
 # Shortcut aliases
-alias @pc="pg pc"
-alias @pscd="pg pscd"
-alias @pd="pg pd"
-alias @pld="pg pld"
-alias @pli="pg pli"
-alias @pls="pg pls"
-alias @plt="pg plt"
-alias @psd="pg psd"
-alias @phe="pg phe"
+alias @phe='pg phe'
+alias @pc='pg pc'
+alias @pscd='pg pscd'
+alias @pd='pg pd'
+alias @pld='pg pld'
+alias @pli='pg pli'
+alias @pls='pg pls'
+alias @plt='pg plt'
+alias @psd='pg psd'
+alias @psa='pg psa'

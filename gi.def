@@ -13,6 +13,8 @@ list branches remote (lbr) :: \
 clone (c) <url> :: \
     git clone $1
 
+fetch (f) :: git fetch
+
 history (h) :: \
     git log > /tmp/gi1; \
     while read line; do echo $line; \ 
@@ -22,8 +24,7 @@ history (h) :: \
         fi; \
     done < /tmp/gi1 | \
     sed "s/^  *//; /^$/d; s/^commit/${l80}\n${c_yel}Commit:/" | \
-    sed "s/^Author/${c_lcya}Author/; s/^Date/${c_lgre}Date/; s/$/${c_whi}/" > /tmp/gi2; \
-    echo -e "$(cat /tmp/gi2)"; \
+    sed "s/^Author/${c_lcya}Author/; s/^Date/${c_lgre}Date/; s/$/${c_whi}/"; \
     rm -f /tmp/gi1 /tmp/gi2
 
 pull (pu) :: \

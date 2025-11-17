@@ -1,20 +1,29 @@
-#!/bin/bash
-help_text="
+#!/usr/bin/env python3
+"""CLI Builder - Generate bash CLI scripts from definition files"""
+from datetime import datetime
+import re, sys, os
+from dataclasses import dataclass
+from typing import List, Optional
+
+C_CYA="\\x1b[96m" 
+C_GRE="\\x1b[92m" 
+C_MAG="\\x1b[95m"
+C_WHI="\\x1b[97m" 
+C_DEF="\\x1b[0m"
+
+HELP_TEXT = """
 NAME
-  cli-builder - A bash script which generates a CLI bash script from a definition file.
+  cli-builder - Generate CLI bash scripts from definition files.
 
 USAGE
   cli-builder [-d] <definition_filename>
 
 OPTIONS
-  -d
-    Run in debug mode.
-
-  -h|--help
-    Show help text.
+  -d          Run in debug mode
+  -h, --help  Show this help
 
 DESCRIPTION
-  This bash script generates a cli (command line interface) bash script from a definition file.
+  This python script generates a cli (command line interface) bash script from a definition file.
   The structure of the definition file is described below.  This script also generates an alias
   file which contains a set of alias commands which run each command in the definition file using
   the associated shortcut prepended with an '@'.
@@ -84,236 +93,287 @@ DESCRIPTION
   > @sf my_file
 
 AUTHOR
-  mjnurse - 2019
-"
-name=${0##*/}
-try="Try '$name -h' for more information"
+  mjnurse - 2025
+"""
 
-# Get usage from help_text.
-usage=${help_text##*USAGE}
-usage=${usage%%OPTIONS*}
-usage=${usage%%PARAMETERS*}
-usage=${usage%%DESCRIPTION*}
-usage=${usage//[$'\n\r']}
-usage=${usage##*   }
-usage="Usage: ${usage}"
+@dataclass
+class Cmd:
+    """Represents a CLI command"""
+    keys: List[str]
+    shortcut: str
+    params: List[str]
+    opt_params: List[str]
+    cmd: str
+    help: str
+    comp: str
+    
+    @property
+    def all_keys(self): return ' '.join(self.keys)
+    @property
+    def num_mandatory(self): return len(self.params)
+    @property
+    def usage_str(self):
+        params = ' '.join(f'<{p}>' for p in self.params)
+        opts = ' '.join(f'[{p}]' for p in self.opt_params)
+        return f"{self.all_keys} ({self.shortcut}) {params} {opts}".strip()
 
-function debug {
-  if [[ $debug_yn == y ]]; then
-    echo "$*"
-  fi
-}
+def parse_def(lines, title, cli_name):
+    """Parse definition file into commands and groups"""
+    group = ""
+    cmds = []
+    title_str = ""
 
+    if title:
+        title_str = f'''
+echo -e "{C_GRE}{"-"*len(title)}{C_DEF}"
+echo -e "{C_GRE}{title}{C_DEF}"
+echo -e "{C_GRE}{"-"*len(title)}{C_DEF}"
+'''
+    title_str += f'''
+echo -e "{C_GRE}gen:{datetime.now().strftime('%Y-%m-%d %H:%M')}{C_DEF}"
+echo
+'''
+
+    cmds.append(('cmd', Cmd(
+            keys=['help'],
+            shortcut=cli_name[0] + 'he',
+            params=[],
+            opt_params=[],
+            cmd=title_str + f'''
+            while IFS= read -r line; do echo -e "${{line}}${{CRESET}}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/\x1b[92m/; s/\\"//g")''',
+            help='',
+            comp=''
+        ), 'HELP'))
+
+    for line in (l.strip() for l in lines):
+        # Skip comments and empty lines
+        if not line or line.startswith('#'):
+            continue
+            
+        # Group description
+        if line.startswith('='):
+            group = line[2:]
+            continue
+        
+        # Direct command insertion
+        if line.startswith('cmd '):
+            cmds.append(('raw', line[4:]))
+            continue
+            
+        # Command definition
+        if '::' not in line:
+            continue
+            
+        # Extract parts
+        help_txt = re.search(r'##\s*(.+)', line)
+        comp_cmd = re.search(r'!!\s*([^#]+)', line)
+        line = re.sub(r'##.*|!!.*', '', line)
+        
+        defn, cmd = (s.strip() for s in line.split('::', 1))
+        
+        # Parse command definition
+        tokens = re.findall(r'\w+|\([^)]+\)|<[^>]+>|\[[^\]]+\]', defn)
+        keys, params, opt_params, shortcut = [], [], [], ''
+        in_opt = False
+        
+        for tok in tokens:
+            if tok.startswith('['):
+                in_opt = True
+            if tok.startswith('('):
+                shortcut = cli_name[0] + tok.strip('()')
+            elif tok.endswith(']'):
+                opt_params.append(tok.strip('<[]>'))
+                in_opt = False
+            elif tok.startswith('<'):
+                (opt_params if in_opt else params).append(tok.strip('<>'))
+            else:
+                keys.append(tok)
+        
+        # Auto-generate shortcut if not provided
+        if not shortcut:
+            shortcut = cli_name[0] + ''.join(k[0] for k in keys[:2])
+
+        cmds.append(('cmd', Cmd(
+            keys=keys,
+            shortcut=shortcut,
+            params=params,
+            opt_params=opt_params,
+            cmd=cmd,
+            help=help_txt.group(1) if help_txt else '',
+            comp=comp_cmd.group(1) if comp_cmd else ''
+        ), group))
+    
+    return cmds
+
+def gen_script(cli_name, cmds, debug=False):
+    """Generate bash CLI script"""
+
+    script = f'''#!/bin/bash
 debug_yn=n
+[[ "$1" == "-d" ]] && {{ debug_yn=y; shift; }}
+[[ "${{CLI_DEBUG^^}}" == "TRUE" ]] && debug_yn=y
 
-if [[ "$1" == "" ]]; then
-  echo $usage
-  echo $try
-  exit
-elif [[ "$1" == "-h" || "$1" == "--help" ]]; then
-  echo "$help_text" 
-  exit
-elif [[ "$1" == "-d" ]]; then
-  debug_yn=y
-  shift
-fi
+C_CYA="{C_CYA}" C_GRE="{C_GRE}" C_MAG="{C_MAG}" C_WHI="{C_WHI}" C_DEF="{C_DEF}"
 
-def_file="${1/.def/}"
+# param 1 - actual number of parameters
+# param 2 - required number of parameters
+# param 3 - incorrect parameters message
+check_params() {{
+  [[ "$1" < "$2" ]] && {{ echo -e "$3"; exit; }}
+}}
 
-if [[ ! -f $def_file.def ]]; then
-  echo "Error: Definition file \"$def_file.def\" missing"
-  exit
-fi
-cli_name=${def_file}
-defns="$(cat $def_file.def | sed 's/^  *//' | sed ':a;/\\ *$/{N;s/\\ *\n//;ba}' | sed '/^ *#/d; s/(\(.*::\)/('${cli_name:0:1}'\1/')"
+print_command() {{
+  [[ $debug_yn == y ]] && {{ echo "COMMAND: $*" | sed 's/"/\\"/g'; echo "COMMAND: $*" | sed 's/./-/g'; }}
+}}
+'''
 
-CCYA="\x1b[96m"
-CGRE="\x1b[92m"
-CMAG="\x1b[95m"
-CWHI="\x1b[97m"
-CDEF="\x1b[0m"
-
-echo '#!/bin/bash
-
-debug_yn=n
-if [[ "$1" == "-d" ]]; then
-  debug_yn=y
-  shift
-fi
-if [[ "${CLI_DEBUG^^}" == "TRUE" ]]; then
-  debug_yn=y
-fi
-
-l80="--------------------------------------------------------------------------------"
-' > $cli_name
-
-alias_list=''
-alias_name_list=''
-comp_option_list=''
-
-defns=$defns'
-= HELP
-help ('${cli_name:0:1}'he) :: egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/'$CGRE'/; s/\"//g"
-'
-
-echo '
-function check_params() {
-  # param 1 - actual number of parameters
-  # param 2 - required number of parameters
-  # param 3 - incorrect parameters message
-
-  if [[ "$1" < "$2" ]]; then
-    echo "$3"
-    exit
-  fi
-}
-
-function print_command() {
-  # param 1 - command
-
-  if [[ $debug_yn == y ]]; then
-    echo "COMMAND: $*" | sed '"'"'s/./-/g'"'"'
-    echo "COMMAND: $*" | sed '"'"'s/"/\"/g'"'"'
-    echo "COMMAND: $*" | sed '"'"'s/./-/g'"'"'
-  fi
-}
-' >> $cli_name
-
-debug "Commands"
-debug "--------"
-
-# echo "$defns" | \
-while IFS= read -r line ; do
-
-  if [[ "${line:0:1}" == "=" ]]; then
-    echo "section=\"${line:2}\""  >> $cli_name
-  elif [[ "${line:0:4}" == "cmd " ]]; then
-    echo "${line:4:99999}" >> $cli_name
-  elif [[ "$line" != "" ]]; then
-    cmd="$(echo $line | sed 's/^.*:://; s/##.*//; s/!!.*//')"
-    usage="$(echo ${line%% ::*} | sed "s/\[/\x1b[37m\[/g; s/\]/\]$CWHI/g; s/^/$CMAG/; s/(/$CCYA(/; s/)/)$CWHI/; s/$/$CDEF/")"
-    if echo $line | grep "##" > /dev/null; then 
-        help="$(echo $line | sed "s/^.*## */$CGRE # /; s/$/\x1b[0m/")"
-        line="${line%%##*}"
-    else 
-        help=""
-    fi
-    if echo $line | grep "!!" > /dev/null; then 
-        comp_cmd="$(echo $line | sed 's/.*!!\(.*\)/\1/')"
-        line="${line%%!!*}"
-    else
-        comp_cmd=""
-    fi
-
-    word_list="${line%%::*}"
-    word_list=${word_list//[/ [ }
-    word_list=${word_list//]/ ] }
-
-    key_word_template=""
-    key_words=""
-    num_mandatory_params=0
-    optional_params_yn=n
-    optional_params=""
-    mandatory_params=""
-    shortcut=""
-    word_count=0
-
-    for word in $word_list; do
-      if [[ "$word" == "[" ]]; then
-        optional_params_yn=y
-      elif [[ "$word" == "]" ]]; then
-        optional_params_yn=n
-      elif [[ "${word:0:1}" == "<" ]]; then
-        if [[ "$optional_params_yn" == "y" ]]; then
-          optional_params="$optional_params $word"
-        else
-          mandatory_params="$mandatory_params $word"
-          let num_mandatory_params=num_mandatory_params+1
-        fi
-      elif [[ "${word:0:1}" == "(" ]]; then
-        shortcut=${word/(/}
-        shortcut=${shortcut/)/}
-        alias_list+=$'\n'"alias @${shortcut}='$cli_name $shortcut'"
-        alias_name_list+="@${shortcut} "
-      else
-        let word_count=word_count+1
-        key_words="$key_words $word"
-        key_word_template="$key_word_template "'$'"$word_count"
-      fi
-    done
-
-    key_words=${key_words:1}
-    key_word_template=${key_word_template:1}
-    mandatory_params=${mandatory_params:1}
-    optional_params=${optional_params:1}
-    while [[ "${cmd:0:1}" == " " ]]; do
-      cmd=${cmd:1}
-    done
-
-    # Generate the auto complete option if one specified
-    if [[ "$comp_cmd" != "" ]]; then
-        comp_option_list+='
-        if [[ "$all" == "'$key_words'" || "$prev" == "'$shortcut'" || "$prev" == "@'$shortcut'" ]]; then
-            COMPREPLY=( $(compgen -W "$('$comp_cmd')" -- "$cur") )
-        fi'
-    fi
-
-    debug "- $key_words ($shortcut)"
-
-    echo "if [[ \"$key_word_template\" == \"$key_words\" || \""'$1'"\" == \"$shortcut\" ]]; then"  >> $cli_name
-    echo "   if [[ \""'$1'"\" == \"$shortcut\" ]]; then shift; else shift $word_count; fi"  >> $cli_name
-    echo "   usage=\"$usage $help\""  >> $cli_name
-    echo "   check_params "'$'"# $num_mandatory_params \"Usage: "'$'"usage\""  >> $cli_name
-    if [[ "$key_words" != "h" && "$key_words" != "help" ]]; then
-      echo "   print_command \" ${cmd//\"/\\\"}" \"  >> $cli_name
-    fi
-    echo "   $cmd"  >> $cli_name
-    echo "   exit"  >> $cli_name
-    echo "fi"  >> $cli_name
-  fi
-done < <(echo "$defns")
-
-echo '
+    aliases, comp_opts = [], []
+    current_group = ""
+    
+    for item in cmds:
+        if item[0] == 'raw':
+            script += item[1] + '\n'
+            continue
+            
+        cmd, group = item[1], item[2]
+        
+        # Add group header if changed
+        if group != current_group:
+            script += f'section="{group}"\n'
+            current_group = group
+        
+        # Generate command check
+        keys_template = ' '.join(f'${i+1}' for i in range(len(cmd.keys)))
+        usage = f"{C_MAG}{cmd.all_keys} {C_CYA}({cmd.shortcut}){C_WHI}"
+        for p in cmd.params:
+            usage += f" <{p}>"
+        if cmd.opt_params:
+            usage += f" {C_DEF}["
+            for p in cmd.opt_params:
+                usage += f"<{p}> "
+            usage = usage[:-1] + f"]{C_WHI}"
+        if cmd.help:
+            usage += f"{C_GRE} # {cmd.help}"
+        usage += f"{C_DEF}"
+        
+        script += f'''
+if [[ "{keys_template}" == "{cmd.all_keys}" || "$1" == "{cmd.shortcut}" ]]; then
+   [[ "$1" == "{cmd.shortcut}" ]] && shift || shift {len(cmd.keys)}
+   usage="{usage}"
+   check_params $# {cmd.num_mandatory} "Usage: $usage"
+'''
+        if cmd.all_keys not in ['h', 'help']:
+            escaped_cmd = cmd.cmd.replace('"', '\\"')
+            script += f'''   print_command " {escaped_cmd}"\n'''
+        script += f'   {cmd.cmd}\n   exit\nfi\n'
+        
+        # Add alias
+        aliases.append(f"alias @{cmd.shortcut}='{cli_name} {cmd.shortcut}'")
+        
+        # Add completion
+        if cmd.comp:
+            comp_opts.append(f'''
+        if [[ "$all" == "{cmd.all_keys}" || "$prev" == "{cmd.shortcut}" || "$prev" == "@{cmd.shortcut}" ]]; then
+            COMPREPLY=( $(compgen -W "$({cmd.comp})" -- "$cur") )
+        fi''')
+    
+    # Add help command
+    script += f'''
 if [[ "$1" == "" ]]; then
   echo "No option passed"
 else
   echo "$*: invalid option"
 fi
-echo "Try \"'$cli_name' help\" for more information."
-' >> $cli_name
+echo "Try \\"{cli_name} help\\" for more information."
+'''
+    
+    return script, aliases, comp_opts
 
-chmod +x $cli_name
-
-echo '# Completion function
-
-_'$cli_name'_complete() {
+def gen_alias_file(cli_name, aliases, comp_opts):
+    """Generate alias and completion file"""
+    alias_names = ' '.join(a.split('=')[0].strip('alias ') for a in aliases)
+    
+    return f'''# Completion function
+_{cli_name}_complete() {{
     local cur prev all
     all=""
-    for ((i = 1; i < ${#COMP_WORDS[@]}; i++)); do
-        word="${COMP_WORDS[i]}"
-        if [[ $word != -* ]]; then
-            all+="$word "
-        fi
+    for ((i = 1; i < ${{#COMP_WORDS[@]}}; i++)); do
+        word="${{COMP_WORDS[i]}}"
+        [[ $word != -* ]] && all+="$word "
     done
     all="$(echo $all | xargs)"
-    cur="${COMP_WORDS[COMP_CWORD]}"
+    cur="${{COMP_WORDS[COMP_CWORD]}}"
     prev_step=1
-    prev="${COMP_WORDS[COMP_CWORD-$prev_step]}"
-    while [[ "${prev:0:1}" == "-" ]]; do
+    prev="${{COMP_WORDS[COMP_CWORD-$prev_step]}}"
+    while [[ "${{prev:0:1}}" == "-" ]]; do
         let prev_step=prev_step+1
-        prev="${COMP_WORDS[COMP_CWORD-$prev_step]}"
+        prev="${{COMP_WORDS[COMP_CWORD-$prev_step]}}"
     done
+{''.join(comp_opts)}
+}}
+complete -F _{cli_name}_complete {cli_name} {alias_names}
 
-    # options
-    '"$comp_option_list"'
-}
-complete -F _'$cli_name'_complete '$cli_name' '$alias_name_list'
-' > $cli_name.alias
+# Shortcut aliases
+{chr(10).join(aliases)}
+'''
 
+def main():
+    debug = '-d' in sys.argv
+    if debug:
+        sys.argv.remove('-d')
+    
+    if len(sys.argv) < 2 or sys.argv[1] in ['-h', '--help']:
+        print(HELP_TEXT)
+        return
+    
+    def_file = sys.argv[1].replace('.def', '')
+    
+    if not os.path.exists(f'{def_file}.def'):
+        print(f'Error: Definition file "{def_file}.def" missing')
+        return
+    
+    cli_name = def_file
+    
+    # Parse definition file
+    with open(f'{def_file}.def') as f:
+        lines = [l.rstrip() for l in f]
+    
+    # Handle line continuations
+    i = 0
+    title = ""
+    while i < len(lines):
+        if lines[i].startswith('@ '):
+            title = lines[i][2:].strip()
+            del lines[i]
+            continue
+        if lines[i].endswith('\\'):
+            lines[i] = lines[i][:-1] + lines[i+1].lstrip()
+            del lines[i+1]
+        else:
+            i += 1
+    
+    cmds = parse_def(lines, title,cli_name)
+    
+    if debug:
+        print("Commands")
+        print("--------")
+        for item in cmds:
+            if item[0] == 'cmd':
+                print(f"- {item[1].all_keys} ({item[1].shortcut})")
+    
+    # Generate files
+    script, aliases, comp_opts = gen_script(cli_name, cmds, debug)
+    alias_content = gen_alias_file(cli_name, aliases, comp_opts)
+    
+    with open(cli_name, 'w') as f:
+        f.write(script)
+    os.chmod(cli_name, 0o755)
+    
+    with open(f'{cli_name}.alias', 'w') as f:
+        f.write(alias_content)
+    
+    if debug:
+        print(f"\nGenerated {cli_name} and {cli_name}.alias")
 
-echo '# Shortcut aliases' >> $cli_name.alias
-echo "$alias_list" >> $cli_name.alias
-
-    # if [[ "$prev" == "dsh" || "$prev" == "@dsh" ]]; then
-    #     COMPREPLY=( $(compgen -W "$(docker ps --all --format '{{.Names}}')" -- "$cur") )
-    # fi
+if __name__ == '__main__':
+    main()

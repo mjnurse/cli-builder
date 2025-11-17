@@ -58,9 +58,10 @@ shell (sh) [<-s>] [<-r>] <container_name> :: \
     !! docker ps --all --format '{{.Names}}' \
     ## bash shell. -s: sh, -r: user root
 
-start container (st) [<-a>] <container_name> :: docker start $1
+start container (st) [<-a>] <container_name> :: docker start $1 \
+    !! docker ps --all --format '{{.Names}}'
 
-stats (s) :: docker stats
+stats (s) :: docker stats ## Show the CPU, Memory consupmtion of containers
 
 stop container (so) [<-a>] <container_name> :: \
     if [[ $1 == -a ]]; then \
