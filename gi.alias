@@ -16,16 +16,17 @@ _gi_complete() {
     done
 
 }
-complete -F _gi_complete gi @ghe @glb @glbr @gc @gf @gh @gpu @gp @g @gsb
+complete -F _gi_complete gi @ghe @gacp @glbl @glbr @gc @gf @gh @gpu @gpo @gs @gsb
 
 # Shortcut aliases
 alias @ghe='gi ghe'
+alias @gacp='gi gacp'
 alias @glbl='gi glbl'
 alias @glbr='gi glbr'
 alias @gc='gi gc'
 alias @gf='gi gf'
 alias @gh='gi gh'
 alias @gpu='gi gpu'
-alias @gp='gi gp'
+alias @gpo='gi gpo'
 alias @gs='gi gs'
 alias @gsb='gi gsb'

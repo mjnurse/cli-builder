@@ -29,7 +29,7 @@ DESCRIPTION
   the associated shortcut prepended with an '@'.
 
   Definition File Structure
-   -------------------------
+  -------------------------
 
   # - a line starting with a # is a comment
 
@@ -170,6 +170,9 @@ echo
         line = re.sub(r'##.*|!!.*', '', line)
         
         defn, cmd = (s.strip() for s in line.split('::', 1))
+
+        if cmd == '':
+            print(f'Warning: Command missing for definition: {defn}\n')
         
         # Parse command definition
         tokens = re.findall(r'\w+|\([^)]+\)|<[^>]+>|\[[^\]]+\]', defn)
@@ -291,8 +294,8 @@ echo "Try \\"{cli_name} help\\" for more information."
 
 def gen_alias_file(cli_name, aliases, comp_opts):
     """Generate alias and completion file"""
-    alias_names = ' '.join(a.split('=')[0].strip('alias ') for a in aliases)
-    
+    alias_names = ' '.join(a.split('=')[0][6:] for a in aliases)
+
     return f'''# Completion function
 _{cli_name}_complete() {{
     local cur prev all
@@ -317,6 +320,44 @@ complete -F _{cli_name}_complete {cli_name} {alias_names}
 {chr(10).join(aliases)}
 '''
 
+def gen_markdown_file(cli_name, cmds, title):
+    """Generate markdown documentation file"""
+    md_content = f"# {title if title else cli_name.upper()}\n\n"
+    md_content += f"*Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}*\n\n"
+
+    current_group = ""
+
+    for item in cmds:
+        if item[0] == 'raw':
+            continue
+
+        cmd, group = item[1], item[2]
+
+        # Add group header if changed
+        if group != current_group and group:
+            md_content += f"\n## {group}\n\n"
+            current_group = group
+        elif group != current_group and not group:
+            current_group = group
+
+        # Format command usage
+        usage = f"{cmd.all_keys} ({cmd.shortcut})"
+        for p in cmd.params:
+            usage += f" <{p}>"
+        if cmd.opt_params:
+            usage += " ["
+            for p in cmd.opt_params:
+                usage += f"<{p}> "
+            usage = usage.rstrip() + "]"
+
+        # Add command entry
+        md_content += f"**`{usage}`**"
+        if cmd.help:
+            md_content += f" - {cmd.help}"
+        md_content += "\n\n"
+
+    return md_content
+
 def main():
     debug = '-d' in sys.argv
     if debug:
@@ -326,54 +367,60 @@ def main():
         print(HELP_TEXT)
         return
     
-    def_file = sys.argv[1].replace('.def', '')
-    
-    if not os.path.exists(f'{def_file}.def'):
-        print(f'Error: Definition file "{def_file}.def" missing')
-        return
-    
-    cli_name = def_file
-    
-    # Parse definition file
-    with open(f'{def_file}.def') as f:
-        lines = [l.rstrip() for l in f]
-    
-    # Handle line continuations
-    i = 0
-    title = ""
-    while i < len(lines):
-        if lines[i].startswith('@ '):
-            title = lines[i][2:].strip()
-            del lines[i]
-            continue
-        if lines[i].endswith('\\'):
-            lines[i] = lines[i][:-1] + lines[i+1].lstrip()
-            del lines[i+1]
-        else:
-            i += 1
-    
-    cmds = parse_def(lines, title,cli_name)
-    
-    if debug:
-        print("Commands")
-        print("--------")
-        for item in cmds:
-            if item[0] == 'cmd':
-                print(f"- {item[1].all_keys} ({item[1].shortcut})")
-    
-    # Generate files
-    script, aliases, comp_opts = gen_script(cli_name, cmds, debug)
-    alias_content = gen_alias_file(cli_name, aliases, comp_opts)
-    
-    with open(cli_name, 'w') as f:
-        f.write(script)
-    os.chmod(cli_name, 0o755)
-    
-    with open(f'{cli_name}.alias', 'w') as f:
-        f.write(alias_content)
-    
-    if debug:
-        print(f"\nGenerated {cli_name} and {cli_name}.alias")
+    print(f"CLI Builder - Generating CLI scripts\n")
+    print(f"Processing: {', '.join(sys.argv[1:])}\n")
+    for arg in sys.argv[1:]:
+        def_file = arg.replace('.def', '')
+        
+        if not os.path.exists(f'{def_file}.def'):
+            print(f'Error: Definition file "{def_file}.def" missing')
+            return
+        
+        cli_name = def_file
+        
+        # Parse definition file
+        with open(f'{def_file}.def') as f:
+            lines = [l.rstrip() for l in f]
+        
+        # Handle line continuations, extract title
+        i = 0
+        title = ""
+        while i < len(lines):
+            if lines[i].startswith('@ '):
+                title = lines[i][2:].strip()
+                del lines[i]
+                continue
+            if lines[i].endswith('\\'):
+                lines[i] = lines[i][:-1] + lines[i+1].lstrip()
+                del lines[i+1]
+            else:
+                i += 1
+        
+        cmds = parse_def(lines, title,cli_name)
+        
+        if debug:
+            print("Commands")
+            print("--------")
+            for item in cmds:
+                if item[0] == 'cmd':
+                    print(f"- {item[1].all_keys} ({item[1].shortcut})")
+        
+        # Generate files
+        script, aliases, comp_opts = gen_script(cli_name, cmds, debug)
+        alias_content = gen_alias_file(cli_name, aliases, comp_opts)
+        markdown_content = gen_markdown_file(cli_name, cmds, title)
+
+        with open(cli_name, 'w') as f:
+            f.write(script)
+        os.chmod(cli_name, 0o755)
+
+        with open(f'{cli_name}.alias', 'w') as f:
+            f.write(alias_content)
+
+        with open(f'{cli_name}.md', 'w') as f:
+            f.write(markdown_content)
+
+        print(f"Generated {cli_name}, {cli_name}.alias, and {cli_name}.md")
 
 if __name__ == '__main__':
     main()

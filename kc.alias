@@ -1,16 +1,36 @@
+# Completion function
+_kc_complete() {
+    local cur prev all
+    all=""
+    for ((i = 1; i < ${#COMP_WORDS[@]}; i++)); do
+        word="${COMP_WORDS[i]}"
+        [[ $word != -* ]] && all+="$word "
+    done
+    all="$(echo $all | xargs)"
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev_step=1
+    prev="${COMP_WORDS[COMP_CWORD-$prev_step]}"
+    while [[ "${prev:0:1}" == "-" ]]; do
+        let prev_step=prev_step+1
+        prev="${COMP_WORDS[COMP_CWORD-$prev_step]}"
+    done
+
+}
+complete -F _kc_complete kc @khe @kga @kg @kl @kgn @kgp @kdp @kgpv @kgpvc @kgse @kdse @kgs @kds @kgss @kdss
+
 # Shortcut aliases
-alias @kga="kc kga"
-alias @kg="kc kg"
-alias @kl="kc kl"
-alias @kgn="kc kgn"
-alias @kgp="kc kgp"
-alias @kdp="kc kdp"
-alias @kgpv="kc kgpv"
-alias @kgpvc="kc kgpvc"
-alias @kgse="kc kgse"
-alias @kdse="kc kdse"
-alias @kgs="kc kgs"
-alias @kds="kc kds"
-alias @kgss="kc kgss"
-alias @kdss="kc kdss"
-alias @khe="kc khe"
+alias @khe='kc khe'
+alias @kga='kc kga'
+alias @kg='kc kg'
+alias @kl='kc kl'
+alias @kgn='kc kgn'
+alias @kgp='kc kgp'
+alias @kdp='kc kdp'
+alias @kgpv='kc kgpv'
+alias @kgpvc='kc kgpvc'
+alias @kgse='kc kgse'
+alias @kdse='kc kdse'
+alias @kgs='kc kgs'
+alias @kds='kc kds'
+alias @kgss='kc kgss'
+alias @kdss='kc kdss'

@@ -9,23 +9,35 @@ C_CYA="\x1b[96m" C_GRE="\x1b[92m" C_MAG="\x1b[95m" C_WHI="\x1b[97m" C_DEF="\x1b[
 # param 2 - required number of parameters
 # param 3 - incorrect parameters message
 check_params() {
-  [[ "$1" < "$2" ]] && { echo "$3"; exit; }
+  [[ "$1" < "$2" ]] && { echo -e "$3"; exit; }
 }
 
 print_command() {
-  [[ $debug_yn == y ]] && { echo "COMMAND: $*" | sed 's/./-/g; p; s/-//' | sed 's/"/\"/g'; echo "COMMAND: $*" | sed 's/./-/g'; }
+  [[ $debug_yn == y ]] && { echo "COMMAND: $*" | sed 's/"/\"/g'; echo "COMMAND: $*" | sed 's/./-/g'; }
 }
-
 section="HELP"
 
 if [[ "$1" == "help" || "$1" == "ghe" ]]; then
    [[ "$1" == "ghe" ]] && shift || shift 1
    usage="\x1b[95mhelp \x1b[96m(ghe)\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
-   while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/[92m/; s/\"//g")
+   
+echo -e "\x1b[92mgen:2025-11-25 18:35\x1b[0m"
+echo
+
+            while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/[92m/; s/\"//g")
    exit
 fi
 section="GENERAL"
+
+if [[ "$1 $2 $3" == "add commit push" || "$1" == "gacp" ]]; then
+   [[ "$1" == "gacp" ]] && shift || shift 3
+   usage="\x1b[95madd commit push \x1b[96m(gacp)\x1b[97m \x1b[0m[<-f|--force> <message>]\x1b[97m\x1b[0m"
+   check_params $# 0 "Usage: $usage"
+   print_command " force_yn=n; if [[ $1 == -f || $1 == --force ]]; then force_yn=y; shift; fi; if [[ \"$1\" == \"\" ]]; then message=\"Various\"; else message=\"$1\"; fi; [ -f ./gen-readme ] && ./gen-readme; git add .; git status; if [[ \"$1\" != \"-f\" ]]; then read -p 'Press a key to continue, CTRL-C to abort' dummy; fi; git commit -m 'Various'; git push origin"
+   force_yn=n; if [[ $1 == -f || $1 == --force ]]; then force_yn=y; shift; fi; if [[ "$1" == "" ]]; then message="Various"; else message="$1"; fi; [ -f ./gen-readme ] && ./gen-readme; git add .; git status; if [[ "$1" != "-f" ]]; then read -p 'Press a key to continue, CTRL-C to abort' dummy; fi; git commit -m 'Various'; git push origin
+   exit
+fi
 
 if [[ "$1 $2 $3" == "list branches local" || "$1" == "glbl" ]]; then
    [[ "$1" == "glbl" ]] && shift || shift 3
@@ -67,8 +79,8 @@ if [[ "$1" == "history" || "$1" == "gh" ]]; then
    [[ "$1" == "gh" ]] && shift || shift 1
    usage="\x1b[95mhistory \x1b[96m(gh)\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
-   print_command " git log > /tmp/gi1;     while read line; do echo $line;         if [[ ${line:0:6} == commit ]]; then             git diff-tree --no-commit-id --name-only -r ${line:7:99} |             tr \"\n\" \" \" | fold -s -w 100; echo;         fi;     done < /tmp/gi1 |     sed \"s/^  *//; /^$/d; s/^commit/${l80}\n${c_yel}Commit:/\" |     sed \"s/^Author/${c_lcya}Author/; s/^Date/${c_lgre}Date/; s/$/${c_whi}/\";     rm -f /tmp/gi1 /tmp/gi2"
-   git log > /tmp/gi1;     while read line; do echo $line;         if [[ ${line:0:6} == commit ]]; then             git diff-tree --no-commit-id --name-only -r ${line:7:99} |             tr "\n" " " | fold -s -w 100; echo;         fi;     done < /tmp/gi1 |     sed "s/^  *//; /^$/d; s/^commit/${l80}\n${c_yel}Commit:/" |     sed "s/^Author/${c_lcya}Author/; s/^Date/${c_lgre}Date/; s/$/${c_whi}/";     rm -f /tmp/gi1 /tmp/gi2
+   print_command " git log > /tmp/gi1; while read line; do echo $line; if [[ ${line:0:6} == commit ]]; then git diff-tree --no-commit-id --name-only -r ${line:7:99} | tr \"\n\" \" \" | fold -s -w 100; echo; fi; done < /tmp/gi1 | sed \"s/^  *//; /^$/d; s/^commit/${l80}\n${c_yel}Commit:/\" | sed \"s/^Author/${c_lcya}Author/; s/^Date/${c_lgre}Date/; s/$/${c_whi}/\"; rm -f /tmp/gi1 /tmp/gi2"
+   git log > /tmp/gi1; while read line; do echo $line; if [[ ${line:0:6} == commit ]]; then git diff-tree --no-commit-id --name-only -r ${line:7:99} | tr "\n" " " | fold -s -w 100; echo; fi; done < /tmp/gi1 | sed "s/^  *//; /^$/d; s/^commit/${l80}\n${c_yel}Commit:/" | sed "s/^Author/${c_lcya}Author/; s/^Date/${c_lgre}Date/; s/$/${c_whi}/"; rm -f /tmp/gi1 /tmp/gi2
    exit
 fi
 
@@ -81,12 +93,12 @@ if [[ "$1" == "pull" || "$1" == "gpu" ]]; then
    exit
 fi
 
-if [[ "$1" == "push" || "$1" == "gp" ]]; then
-   [[ "$1" == "gp" ]] && shift || shift 1
-   usage="\x1b[95mpush \x1b[96m(gp)\x1b[97m \x1b[0m[<-f|--force> <message>]\x1b[97m\x1b[0m"
+if [[ "$1 $2" == "push origin" || "$1" == "gpo" ]]; then
+   [[ "$1" == "gpo" ]] && shift || shift 2
+   usage="\x1b[95mpush origin \x1b[96m(gpo)\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
-   print_command " force_yn=n;     if [[ $1 == -f || $1 == --force ]]; then         force_yn=y;         shift;     fi;     if [[ \"$1\" == \"\" ]]; then         message=\"Various\";     else         message=\"$1\";     fi;     [ -f ./gen-readme ] && ./gen-readme;     git add .;     git status;     if [[ \"$1\" != \"-f\" ]]; then         read -p 'Press a key to continue, CTRL-C to abort' dummy;     fi;     git commit -m 'Various';     git push origin"
-   force_yn=n;     if [[ $1 == -f || $1 == --force ]]; then         force_yn=y;         shift;     fi;     if [[ "$1" == "" ]]; then         message="Various";     else         message="$1";     fi;     [ -f ./gen-readme ] && ./gen-readme;     git add .;     git status;     if [[ "$1" != "-f" ]]; then         read -p 'Press a key to continue, CTRL-C to abort' dummy;     fi;     git commit -m 'Various';     git push origin
+   print_command " git push origin"
+   git push origin
    exit
 fi
 

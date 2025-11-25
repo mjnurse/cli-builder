@@ -4,6 +4,26 @@
 = GENERAL
 # ---------------------------------------------------------------------------------------
 
+add commit push (acp) [<-f|--force>] [<message>] :: \
+    force_yn=n; \
+    if [[ $1 == -f || $1 == --force ]]; then \
+        force_yn=y; \
+        shift; \
+    fi; \
+    if [[ "$1" == "" ]]; then \
+        message="Various"; \
+    else \
+        message="$1"; \
+    fi; \
+    [ -f ./gen-readme ] && ./gen-readme; \
+    git add .; \
+    git status; \
+    if [[ "$1" != "-f" ]]; then \
+        read -p 'Press a key to continue, CTRL-C to abort' dummy; \
+    fi; \
+    git commit -m 'Various'; \
+    git push origin
+
 list branches local (lbl) :: \
     git branch
 
@@ -30,24 +50,7 @@ history (h) :: \
 pull (pu) :: \
     git pull
 
-push (p) [<-f|--force>] [<message>] :: \
-    force_yn=n; \
-    if [[ $1 == -f || $1 == --force ]]; then \
-        force_yn=y; \
-        shift; \
-    fi; \
-    if [[ "$1" == "" ]]; then \
-        message="Various"; \
-    else \
-        message="$1"; \
-    fi; \
-    [ -f ./gen-readme ] && ./gen-readme; \
-    git add .; \
-    git status; \
-    if [[ "$1" != "-f" ]]; then \
-        read -p 'Press a key to continue, CTRL-C to abort' dummy; \
-    fi; \
-    git commit -m 'Various'; \
+push origin (po) :: \
     git push origin
 
 status (s) :: git status

@@ -15,23 +15,28 @@ check_params() {
 print_command() {
   [[ $debug_yn == y ]] && { echo "COMMAND: $*" | sed 's/"/\"/g'; echo "COMMAND: $*" | sed 's/./-/g'; }
 }
-
-echo -e "\x1b[92m-------------\x1b[0m"
-echo -e "\x1b[92mElasticsearch\x1b[0m"
-echo -e "\x1b[92m-------------\x1b[0m"
 section="HELP"
 
 if [[ "$1" == "help" || "$1" == "ehe" ]]; then
    [[ "$1" == "ehe" ]] && shift || shift 1
    usage="\x1b[95mhelp \x1b[96m(ehe)\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
-   while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/[92m/; s/\"//g")
+   
+echo -e "\x1b[92m-------------\x1b[0m"
+echo -e "\x1b[92mElasticsearch\x1b[0m"
+echo -e "\x1b[92m-------------\x1b[0m"
+
+echo -e "\x1b[92mgen:2025-11-25 18:35\x1b[0m"
+echo
+
+            while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/[92m/; s/\"//g")
    exit
 fi
 ES_AUTH=""
 ES_HOST="${ES_HOST:-localhost}"
 ES_PORT="${ES_PORT:-9200}"
 pj() { if command -v jq >/dev/null 2>&1; then jq .; else cat; fi; }
+cols() { python3 -c 'import sys,json;f=lambda d,p="":[f(v["properties"],p+k+".") if isinstance(v,dict) and "properties" in v else print(p+k) for k,v in d.items()];[f(i["mappings"]["properties"]) for i in json.load(sys.stdin).values()]'; }
 section="CLUSTER"
 
 if [[ "$1 $2" == "clear cache" || "$1" == "ecc" ]]; then
@@ -69,6 +74,15 @@ if [[ "$1 $2" == "cluster stats" || "$1" == "ecs" ]]; then
    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cluster/stats?human&pretty"
    exit
 fi
+
+if [[ "$1 $2 $3" == "cluster recovery stats" || "$1" == "ecrs" ]]; then
+   [[ "$1" == "ecrs" ]] && shift || shift 3
+   usage="\x1b[95mcluster recovery stats \x1b[96m(ecrs)\x1b[97m\x1b[0m"
+   check_params $# 0 "Usage: $usage"
+   print_command " curl -s -X GET \"http://$ES_HOST:$ES_PORT/_cat/recovery?v\""
+   curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/recovery?v"
+   exit
+fi
 section="INDEX INTERROGATION"
 
 if [[ "$1" == "count" || "$1" == "ec" ]]; then
@@ -93,8 +107,8 @@ if [[ "$1 $2" == "list indices" || "$1" == "eli" ]]; then
    [[ "$1" == "eli" ]] && shift || shift 2
    usage="\x1b[95mlist indices \x1b[96m(eli)\x1b[97m \x1b[0m[<index_name>]\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
-   print_command " curl -s -X GET \"http://$ES_HOST:$ES_PORT/_cat/indices/$1?v&h=health,status,index,pri,rep,sc,docs.count,docs.deleted,store.size,pri.store.size&s=index\""
-   curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/indices/$1?v&h=health,status,index,pri,rep,sc,docs.count,docs.deleted,store.size,pri.store.size&s=index"
+   print_command " curl -s -X GET \"http://$ES_HOST:$ES_PORT/_cat/indices/$1?v&h=health,status,index,pri,rep,sc,docs.count,docs.deleted,store.size,pri.store.size&s=index\" | tee /tmp/es_idx_list; sed -i 's/^[^ ][^ ]*  *[^ ][^ ]*  *//; s/ .*//' /tmp/es_idx_list"
+   curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/indices/$1?v&h=health,status,index,pri,rep,sc,docs.count,docs.deleted,store.size,pri.store.size&s=index" | tee /tmp/es_idx_list; sed -i 's/^[^ ][^ ]*  *[^ ][^ ]*  *//; s/ .*//' /tmp/es_idx_list
    exit
 fi
 
@@ -104,6 +118,15 @@ if [[ "$1 $2" == "list open" || "$1" == "elo" ]]; then
    check_params $# 0 "Usage: $usage"
    print_command " curl -s -X GET \"http://$ES_HOST:$ES_PORT/_cat/indices/$1?v&h=health,status,index,pri,rep,sc,docs.count,docs.deleted,store.size,pri.store.size&s=index\" | sed \"/ close  /d\""
    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/indices/$1?v&h=health,status,index,pri,rep,sc,docs.count,docs.deleted,store.size,pri.store.size&s=index" | sed "/ close  /d"
+   exit
+fi
+
+if [[ "$1 $2 $3" == "list dot indices" || "$1" == "eldi" ]]; then
+   [[ "$1" == "eldi" ]] && shift || shift 3
+   usage="\x1b[95mlist dot indices \x1b[96m(eldi)\x1b[97m\x1b[0m"
+   check_params $# 0 "Usage: $usage"
+   print_command " curl -s -X GET \"http://$ES_HOST:$ES_PORT/_cat/indices/.*?v&s=index\""
+   curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/indices/.*?v&s=index"
    exit
 fi
 
@@ -152,12 +175,21 @@ if [[ "$1 $2 $3 $4 $5" == "list avg segments per shard" || "$1" == "elass" ]]; t
    exit
 fi
 
+if [[ "$1 $2" == "list fields" || "$1" == "elf" ]]; then
+   [[ "$1" == "elf" ]] && shift || shift 2
+   usage="\x1b[95mlist fields \x1b[96m(elf)\x1b[97m <index_name>\x1b[0m"
+   check_params $# 1 "Usage: $usage"
+   print_command " curl -s -X GET \"http://$ES_HOST:$ES_PORT/$1/_mapping\" | cols"
+   curl -s -X GET "http://$ES_HOST:$ES_PORT/$1/_mapping" | cols
+   exit
+fi
+
 if [[ "$1 $2 $3" == "get index mapping" || "$1" == "egim" ]]; then
    [[ "$1" == "egim" ]] && shift || shift 3
    usage="\x1b[95mget index mapping \x1b[96m(egim)\x1b[97m <index_name>\x1b[0m"
    check_params $# 1 "Usage: $usage"
-   print_command " curl -s -X GET \"http://$ES_HOST:$ES_PORT/$1/_mapping?pretty\" | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n * \(\"type\" : \"\)/ \1/g' -e 's/\n * \(\"normalizer\" :\)/ \1/g' -e 's/\n * \(\"index\" :\)/ \1/g' -e 's/\n * \(\"ignore_above\" :\)/ \1/g' -e 's/\n * \(\"fields\" :\)/ \1/g' -e 's/\n * \(\"keyword\" :\)/ \1/g' -e 's/\([a-z0-9\"]\) *\n */\1 /g' -e 's/} *\n *}/} }/g' -e 's/} *\n *}/} }/g'"
-   curl -s -X GET "http://$ES_HOST:$ES_PORT/$1/_mapping?pretty" | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n * \("type" : "\)/ \1/g' -e 's/\n * \("normalizer" :\)/ \1/g' -e 's/\n * \("index" :\)/ \1/g' -e 's/\n * \("ignore_above" :\)/ \1/g' -e 's/\n * \("fields" :\)/ \1/g' -e 's/\n * \("keyword" :\)/ \1/g' -e 's/\([a-z0-9"]\) *\n */\1 /g' -e 's/} *\n *}/} }/g' -e 's/} *\n *}/} }/g'
+   print_command " curl -s -X GET \"http://$ES_HOST:$ES_PORT/$1/_mapping?pretty\" | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n *\([^\"]*\"type\"\)/ \1/g' -e 's/\n *\([^\"]*\"normalizer\"\)/ \1/g' -e 's/\n *\([^\"]*\"index\"\)/ \1/g' -e 's/\n *\([^\"]*\"ignore_above\"\)/ \1/g' -e 's/\n *\([^\"]*\"fields\"\)/ \1/g' -e 's/\n *\([^\"]*\"keyword\"\)/ \1/g' -e 's/\n *\([^\"]*\"raw\"\)/ \1/g' -e 's/\([a-z0-9\"]\) *\n */\1 /g' -e 's/} *\n *}/} }/g' -e 's/} *\n *}/} }/g'"
+   curl -s -X GET "http://$ES_HOST:$ES_PORT/$1/_mapping?pretty" | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n *\([^"]*"type"\)/ \1/g' -e 's/\n *\([^"]*"normalizer"\)/ \1/g' -e 's/\n *\([^"]*"index"\)/ \1/g' -e 's/\n *\([^"]*"ignore_above"\)/ \1/g' -e 's/\n *\([^"]*"fields"\)/ \1/g' -e 's/\n *\([^"]*"keyword"\)/ \1/g' -e 's/\n *\([^"]*"raw"\)/ \1/g' -e 's/\([a-z0-9"]\) *\n */\1 /g' -e 's/} *\n *}/} }/g' -e 's/} *\n *}/} }/g'
    exit
 fi
 
@@ -362,6 +394,15 @@ if [[ "$1 $2" == "list nodes" || "$1" == "eln" ]]; then
    exit
 fi
 
+if [[ "$1 $2 $3" == "list node attributes" || "$1" == "elna" ]]; then
+   [[ "$1" == "elna" ]] && shift || shift 3
+   usage="\x1b[95mlist node attributes \x1b[96m(elna)\x1b[97m\x1b[0m"
+   check_params $# 0 "Usage: $usage"
+   print_command " curl -s -X GET \"http://$ES_HOST:$ES_PORT/_cat/nodeattrs?v&s=node\""
+   curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/nodeattrs?v&s=node"
+   exit
+fi
+
 if [[ "$1 $2 $3" == "list nodes queries" || "$1" == "elnq" ]]; then
    [[ "$1" == "elnq" ]] && shift || shift 3
    usage="\x1b[95mlist nodes queries \x1b[96m(elnq)\x1b[97m\x1b[0m"
@@ -386,6 +427,24 @@ if [[ "$1 $2 $3" == "node active threads" || "$1" == "eat" ]]; then
    check_params $# 0 "Usage: $usage"
    print_command " curl -s -X GET \"http://$ES_HOST:$ES_PORT/_cat/thread_pool?v&s=node_name,name\""
    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/thread_pool?v&s=node_name,name"
+   exit
+fi
+
+if [[ "$1 $2 $3 $4" == "node thread pool sizes" || "$1" == "etps" ]]; then
+   [[ "$1" == "etps" ]] && shift || shift 4
+   usage="\x1b[95mnode thread pool sizes \x1b[96m(etps)\x1b[97m\x1b[0m"
+   check_params $# 0 "Usage: $usage"
+   print_command " curl -s -X GET \"http://$ES_HOST:$ES_PORT/_cat/thread_pool?v&h=node_name,name,size,active,queue,queue_size,largest,min,max&s=node_name,name\""
+   curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/thread_pool?v&h=node_name,name,size,active,queue,queue_size,largest,min,max&s=node_name,name"
+   exit
+fi
+
+if [[ "$1 $2 $3" == "node perf overview" || "$1" == "enpo" ]]; then
+   [[ "$1" == "enpo" ]] && shift || shift 3
+   usage="\x1b[95mnode perf overview \x1b[96m(enpo)\x1b[97m\x1b[0m"
+   check_params $# 0 "Usage: $usage"
+   print_command " curl -s -X GET \"http://$ES_HOST:$ES_PORT/_cat/nodes?v&h=ip,port,role,master,cpu,ft,ftt,iic,iif,mt,mtt,d,mcs\""
+   curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/nodes?v&h=ip,port,role,master,cpu,ft,ftt,iic,iif,mt,mtt,d,mcs"
    exit
 fi
 section="SEARCH"

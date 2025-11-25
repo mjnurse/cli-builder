@@ -15,8 +15,110 @@ _es_complete() {
         prev="${COMP_WORDS[COMP_CWORD-$prev_step]}"
     done
 
+        if [[ "$all" == "clear cache" || "$prev" == "ecc" || "$prev" == "@ecc" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "count" || "$prev" == "ec" || "$prev" == "@ec" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "list indices" || "$prev" == "eli" || "$prev" == "@eli" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "list open" || "$prev" == "elo" || "$prev" == "@elo" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "list dot indices" || "$prev" == "eldi" || "$prev" == "@eldi" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "list shards" || "$prev" == "els" || "$prev" == "@els" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "list shard details" || "$prev" == "elsd" || "$prev" == "@elsd" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "list segments" || "$prev" == "ele" || "$prev" == "@ele" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "list segmented shards" || "$prev" == "elss" || "$prev" == "@elss" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "list avg segments per shard" || "$prev" == "elass" || "$prev" == "@elass" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "list fields" || "$prev" == "elf" || "$prev" == "@elf" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "get index mapping" || "$prev" == "egim" || "$prev" == "@egim" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "add index to alias" || "$prev" == "eaita" || "$prev" == "@eaita" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "remove index from alias" || "$prev" == "erifa" || "$prev" == "@erifa" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "create index" || "$prev" == "eci" || "$prev" == "@eci" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "create index from mapping" || "$prev" == "ecifm" || "$prev" == "@ecifm" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "clone index" || "$prev" == "eclni" || "$prev" == "@eclni" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "delete index" || "$prev" == "edi" || "$prev" == "@edi" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "open index" || "$prev" == "eopi" || "$prev" == "@eopi" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "close index" || "$prev" == "ecli" || "$prev" == "@ecli" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "enable read only" || "$prev" == "eero" || "$prev" == "@eero" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "enable read write" || "$prev" == "eerw" || "$prev" == "@eerw" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "reindex index" || "$prev" == "eri" || "$prev" == "@eri" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "move shard" || "$prev" == "ems" || "$prev" == "@ems" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "alter number replicas" || "$prev" == "eanr" || "$prev" == "@eanr" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "forcemerge" || "$prev" == "efm" || "$prev" == "@efm" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "refresh" || "$prev" == "er" || "$prev" == "@er" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "add entry" || "$prev" == "eae" || "$prev" == "@eae" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "delete entry" || "$prev" == "ede" || "$prev" == "@ede" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "search" || "$prev" == "es" || "$prev" == "@es" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "search json" || "$prev" == "esj" || "$prev" == "@esj" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "search match" || "$prev" == "esm" || "$prev" == "@esm" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "search term" || "$prev" == "est" || "$prev" == "@est" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
+        if [[ "$all" == "search summary" || "$prev" == "ess" || "$prev" == "@ess" ]]; then
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+        fi
 }
-complete -F _es_complete es @ehe @ecc @eco @ech @ec @ec @e @e @elo @e @elsd @ele @e @e @egim @elu @efmp @eait @erif @ec @ecifm @ecln @ed @eop @ec @eero @eerw @er @em @eanr @ed @er @efm @er @eae @ede @eln @elnq @esn @eat @e @esj @esm @est @e @esq @elt @eltd @eare @edre @elre @ecsn @edsn @elsn @esnd @ersn @eg @eqe
+complete -F _es_complete es @ehe @ecc @eco @ech @ecs @ecrs @ec @ela @eli @elo @eldi @els @elsd @ele @elss @elass @elf @egim @elus @efmp @eaita @erifa @eci @ecifm @eclni @edi @eopi @ecli @eero @eerw @eri @ems @eanr @edsa @ersa @efm @er @eae @ede @eln @elna @elnq @esn @eat @etps @enpo @es @esj @esm @est @ess @esql @elt @eltd @eare @edre @elre @ecsn @edsn @elsn @esnd @ersn @eg @eqes
 
 # Shortcut aliases
 alias @ehe='es ehe'
@@ -24,15 +126,18 @@ alias @ecc='es ecc'
 alias @eco='es eco'
 alias @ech='es ech'
 alias @ecs='es ecs'
+alias @ecrs='es ecrs'
 alias @ec='es ec'
 alias @ela='es ela'
 alias @eli='es eli'
 alias @elo='es elo'
+alias @eldi='es eldi'
 alias @els='es els'
 alias @elsd='es elsd'
 alias @ele='es ele'
 alias @elss='es elss'
 alias @elass='es elass'
+alias @elf='es elf'
 alias @egim='es egim'
 alias @elus='es elus'
 alias @efmp='es efmp'
@@ -56,9 +161,12 @@ alias @er='es er'
 alias @eae='es eae'
 alias @ede='es ede'
 alias @eln='es eln'
+alias @elna='es elna'
 alias @elnq='es elnq'
 alias @esn='es esn'
 alias @eat='es eat'
+alias @etps='es etps'
+alias @enpo='es enpo'
 alias @es='es es'
 alias @esj='es esj'
 alias @esm='es esm'

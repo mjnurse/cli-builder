@@ -19,7 +19,7 @@ _dc_complete() {
             COMPREPLY=( $(compgen -W "$(docker ps --all --format '{{.Names}}')" -- "$cur") )
         fi
         if [[ "$all" == "logs" || "$prev" == "dlo" || "$prev" == "@dlo" ]]; then
-            COMPREPLY=( $(compgen -W "$(docker ps --all --format '{{.Names}}'     )" -- "$cur") )
+            COMPREPLY=( $(compgen -W "$(docker ps --all --format '{{.Names}}' )" -- "$cur") )
         fi
         if [[ "$all" == "rename container" || "$prev" == "dmv" || "$prev" == "@dmv" ]]; then
             COMPREPLY=( $(compgen -W "$(docker ps --all --format '{{.Names}}')" -- "$cur") )
@@ -28,19 +28,19 @@ _dc_complete() {
             COMPREPLY=( $(compgen -W "$(docker ps --all --format '{{.Names}}')" -- "$cur") )
         fi
         if [[ "$all" == "shell" || "$prev" == "dsh" || "$prev" == "@dsh" ]]; then
-            COMPREPLY=( $(compgen -W "$(docker ps --all --format '{{.Names}}'     )" -- "$cur") )
+            COMPREPLY=( $(compgen -W "$(docker ps --all --format '{{.Names}}' )" -- "$cur") )
         fi
         if [[ "$all" == "start container" || "$prev" == "dst" || "$prev" == "@dst" ]]; then
             COMPREPLY=( $(compgen -W "$(docker ps --all --format '{{.Names}}')" -- "$cur") )
         fi
         if [[ "$all" == "stop container" || "$prev" == "dso" || "$prev" == "@dso" ]]; then
-            COMPREPLY=( $(compgen -W "$(docker ps --all --format '{{.Names}}'     )" -- "$cur") )
+            COMPREPLY=( $(compgen -W "$(docker ps --all --format '{{.Names}}' )" -- "$cur") )
         fi
         if [[ "$all" == "remove network" || "$prev" == "drn" || "$prev" == "@drn" ]]; then
             COMPREPLY=( $(compgen -W "$(docker network ls --format '{{.Name}}')" -- "$cur") )
         fi
 }
-complete -F _dc_complete dc @dhe @drm @dp @dlo @dpu @dmv @dre @dru @dsh @dst @d @dso @dcdo @dc @dcre @dct @dcup @dln @dpn @drn @dsp
+complete -F _dc_complete dc @dhe @drm @dps @dlo @dpu @dmv @dre @dru @dsh @dst @ds @dso @dcdo @dcls @dcre @dct @dcup @dln @dpn @drn @dspa
 
 # Shortcut aliases
 alias @dhe='dc dhe'

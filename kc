@@ -1,184 +1,166 @@
 #!/bin/bash
-
 debug_yn=n
-if [[ "$1" == "-d" ]]; then
-  debug_yn=y
-  shift
-fi
-if [[ "${CLI_DEBUG^^}" == "TRUE" ]]; then
-  debug_yn=y
-fi
+[[ "$1" == "-d" ]] && { debug_yn=y; shift; }
+[[ "${CLI_DEBUG^^}" == "TRUE" ]] && debug_yn=y
 
-l80="--------------------------------------------------------------------------------"
+C_CYA="\x1b[96m" C_GRE="\x1b[92m" C_MAG="\x1b[95m" C_WHI="\x1b[97m" C_DEF="\x1b[0m"
 
-c_bla="\\\e[30m"
-c_blu="\\\e[34m"
-c_cya="\\\e[36m"
-c_def="\\\e[39m"
-c_gra="\\\e[90m"
-c_gre="\\\e[32m"
-c_mag="\\\e[35m"
-c_red="\\\e[31m"
-c_whi="\\\e[97m"
-c_yel="\\\e[33m"
-
-c_lblu="\\\e[94m"
-c_lcya="\\\e[96m"
-c_lgra="\\\e[37m"
-c_lgre="\\\e[92m"
-c_lmag="\\\e[95m"
-c_lred="\\\e[91m"
-c_lyel="\\\e[93m"
-
-
-function check_params() {
-  # param 1 - actual number of parameters
-  # param 2 - required number of parameters
-  # param 3 - incorrect parameters message
-
-  if [[ "$1" < "$2" ]]; then
-    echo "$3"
-    exit
-  fi
+# param 1 - actual number of parameters
+# param 2 - required number of parameters
+# param 3 - incorrect parameters message
+check_params() {
+  [[ "$1" < "$2" ]] && { echo -e "$3"; exit; }
 }
 
-function print_command() {
-  # param 1 - command
-
-  if [[ $debug_yn == y ]]; then
-    echo "COMMAND: $*" | sed s/./-/g
-    echo "COMMAND: $*"
-    echo "COMMAND: $*" | sed s/./-/g
-  fi
+print_command() {
+  [[ $debug_yn == y ]] && { echo "COMMAND: $*" | sed 's/"/\"/g'; echo "COMMAND: $*" | sed 's/./-/g'; }
 }
+section="HELP"
 
-section="ALL"
-if [[ "$1 $2" == "get all" || "$1" == "kga" ]]; then
-   if [[ "$1" == "kga" ]]; then shift; else shift 2; fi
-   usage="[95mget all [96m(kga)[97m [37m[<namespace>][97m[0m "
+if [[ "$1" == "help" || "$1" == "khe" ]]; then
+   [[ "$1" == "khe" ]] && shift || shift 1
+   usage="\x1b[95mhelp \x1b[96m(khe)\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
-   print_command 'if [[ "$1" == "" ]]; then kubectl get all -A; else kubectl get all -n $1; fi'
+   
+echo -e "\x1b[92mgen:2025-11-25 18:35\x1b[0m"
+echo
+
+            while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/[92m/; s/\"//g")
+   exit
+fi
+section="ALL"
+
+if [[ "$1 $2" == "get all" || "$1" == "kga" ]]; then
+   [[ "$1" == "kga" ]] && shift || shift 2
+   usage="\x1b[95mget all \x1b[96m(kga)\x1b[97m \x1b[0m[<namespace>]\x1b[97m\x1b[0m"
+   check_params $# 0 "Usage: $usage"
+   print_command " if [[ \"$1\" == \"\" ]]; then kubectl get all -A; else kubectl get all -n $1; fi"
    if [[ "$1" == "" ]]; then kubectl get all -A; else kubectl get all -n $1; fi
    exit
 fi
+
 if [[ "$1" == "get" || "$1" == "kg" ]]; then
-   if [[ "$1" == "kg" ]]; then shift; else shift 1; fi
-   usage="[95mget [96m(kg)[97m <item>[0m "
+   [[ "$1" == "kg" ]] && shift || shift 1
+   usage="\x1b[95mget \x1b[96m(kg)\x1b[97m <item>\x1b[0m"
    check_params $# 1 "Usage: $usage"
-   print_command 'kubectl get $1'
+   print_command " kubectl get $1"
    kubectl get $1
    exit
 fi
 section="LOGS"
+
 if [[ "$1" == "logs" || "$1" == "kl" ]]; then
-   if [[ "$1" == "kl" ]]; then shift; else shift 1; fi
-   usage="[95mlogs [96m(kl)[97m <pod_name> [37m[<namespace>][97m[0m "
+   [[ "$1" == "kl" ]] && shift || shift 1
+   usage="\x1b[95mlogs \x1b[96m(kl)\x1b[97m <pod_name> \x1b[0m[<namespace>]\x1b[97m\x1b[0m"
    check_params $# 1 "Usage: $usage"
-   print_command 'if [[ "$2" == "" ]]; then kubectl logs $1; else kubectl logs $1 -n $2; fi'
+   print_command " if [[ \"$2\" == \"\" ]]; then kubectl logs $1; else kubectl logs $1 -n $2; fi"
    if [[ "$2" == "" ]]; then kubectl logs $1; else kubectl logs $1 -n $2; fi
    exit
 fi
 section="NODES"
+
 if [[ "$1 $2" == "get node" || "$1" == "kgn" ]]; then
-   if [[ "$1" == "kgn" ]]; then shift; else shift 2; fi
-   usage="[95mget node [96m(kgn)[97m[0m "
+   [[ "$1" == "kgn" ]] && shift || shift 2
+   usage="\x1b[95mget node \x1b[96m(kgn)\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
-   print_command 'kubectl get nodes'
+   print_command " kubectl get nodes"
    kubectl get nodes
    exit
 fi
 section="PODS"
+
 if [[ "$1 $2" == "get pods" || "$1" == "kgp" ]]; then
-   if [[ "$1" == "kgp" ]]; then shift; else shift 2; fi
-   usage="[95mget pods [96m(kgp)[97m [37m[<namespace>][97m[0m "
+   [[ "$1" == "kgp" ]] && shift || shift 2
+   usage="\x1b[95mget pods \x1b[96m(kgp)\x1b[97m \x1b[0m[<namespace>]\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
-   print_command 'if [[ "$1" == "" ]]; then kubectl get pods -A; else kubectl get pods -n $1; fi'
+   print_command " if [[ \"$1\" == \"\" ]]; then kubectl get pods -A; else kubectl get pods -n $1; fi"
    if [[ "$1" == "" ]]; then kubectl get pods -A; else kubectl get pods -n $1; fi
    exit
 fi
+
 if [[ "$1 $2" == "delete pod" || "$1" == "kdp" ]]; then
-   if [[ "$1" == "kdp" ]]; then shift; else shift 2; fi
-   usage="[95mdelete pod [96m(kdp)[97m <pod_name> [37m[<namespace>][97m[0m "
+   [[ "$1" == "kdp" ]] && shift || shift 2
+   usage="\x1b[95mdelete pod \x1b[96m(kdp)\x1b[97m <pod_name> \x1b[0m[<namespace>]\x1b[97m\x1b[0m"
    check_params $# 1 "Usage: $usage"
-   print_command 'if [[ "$2" != "" ]]; then kubectl delete pod $1 -n $2; else kubectl delete pod $1; fi'
+   print_command " if [[ \"$2\" != \"\" ]]; then kubectl delete pod $1 -n $2; else kubectl delete pod $1; fi"
    if [[ "$2" != "" ]]; then kubectl delete pod $1 -n $2; else kubectl delete pod $1; fi
    exit
 fi
 section="PERSISTENT VOLUMES"
+
 if [[ "$1 $2 $3" == "get persistent volumes" || "$1" == "kgpv" ]]; then
-   if [[ "$1" == "kgpv" ]]; then shift; else shift 3; fi
-   usage="[95mget persistent volumes [96m(kgpv)[97m [37m[<namespace>][97m[0m "
+   [[ "$1" == "kgpv" ]] && shift || shift 3
+   usage="\x1b[95mget persistent volumes \x1b[96m(kgpv)\x1b[97m \x1b[0m[<namespace>]\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
-   print_command 'if [[ "$1" == "" ]]; then kubectl get pv -A; else kubectl get pv -n $1; fi'
+   print_command " if [[ \"$1\" == \"\" ]]; then kubectl get pv -A; else kubectl get pv -n $1; fi"
    if [[ "$1" == "" ]]; then kubectl get pv -A; else kubectl get pv -n $1; fi
    exit
 fi
 section="PERSISTENT VOLUME CLAIMS"
+
 if [[ "$1 $2 $3 $4" == "get persistent volume claims" || "$1" == "kgpvc" ]]; then
-   if [[ "$1" == "kgpvc" ]]; then shift; else shift 4; fi
-   usage="[95mget persistent volume claims [96m(kgpvc)[97m [37m[<namespace>][97m[0m "
+   [[ "$1" == "kgpvc" ]] && shift || shift 4
+   usage="\x1b[95mget persistent volume claims \x1b[96m(kgpvc)\x1b[97m \x1b[0m[<namespace>]\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
-   print_command 'if [[ "$1" == "" ]]; then kubectl get pvc -A; else kubectl get pvc -n $1; fi'
+   print_command " if [[ \"$1\" == \"\" ]]; then kubectl get pvc -A; else kubectl get pvc -n $1; fi"
    if [[ "$1" == "" ]]; then kubectl get pvc -A; else kubectl get pvc -n $1; fi
    exit
 fi
 section="SECRETS"
+
 if [[ "$1 $2" == "get secrets" || "$1" == "kgse" ]]; then
-   if [[ "$1" == "kgse" ]]; then shift; else shift 2; fi
-   usage="[95mget secrets [96m(kgse)[97m [37m[<namespace>][97m[0m "
+   [[ "$1" == "kgse" ]] && shift || shift 2
+   usage="\x1b[95mget secrets \x1b[96m(kgse)\x1b[97m \x1b[0m[<namespace>]\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
-   print_command 'if [[ "$1" == "" ]]; then kubectl get secrets -A; else kubectl get secrets -n $1; fi'
+   print_command " if [[ \"$1\" == \"\" ]]; then kubectl get secrets -A; else kubectl get secrets -n $1; fi"
    if [[ "$1" == "" ]]; then kubectl get secrets -A; else kubectl get secrets -n $1; fi
    exit
 fi
+
 if [[ "$1 $2" == "delete service" || "$1" == "kdse" ]]; then
-   if [[ "$1" == "kdse" ]]; then shift; else shift 2; fi
-   usage="[95mdelete service [96m(kdse)[97m <secret_name> [37m[<namespace>][97m[0m "
+   [[ "$1" == "kdse" ]] && shift || shift 2
+   usage="\x1b[95mdelete service \x1b[96m(kdse)\x1b[97m <secret_name> \x1b[0m[<namespace>]\x1b[97m\x1b[0m"
    check_params $# 1 "Usage: $usage"
-   print_command 'if [[ "$2" != "" ]]; then kubectl delete secret $1 -n $2; else kubectl delete secret $1; fi'
+   print_command " if [[ \"$2\" != \"\" ]]; then kubectl delete secret $1 -n $2; else kubectl delete secret $1; fi"
    if [[ "$2" != "" ]]; then kubectl delete secret $1 -n $2; else kubectl delete secret $1; fi
    exit
 fi
 section="SERVICES"
+
 if [[ "$1 $2" == "get services" || "$1" == "kgs" ]]; then
-   if [[ "$1" == "kgs" ]]; then shift; else shift 2; fi
-   usage="[95mget services [96m(kgs)[97m [37m[<namespace>][97m[0m "
+   [[ "$1" == "kgs" ]] && shift || shift 2
+   usage="\x1b[95mget services \x1b[96m(kgs)\x1b[97m \x1b[0m[<namespace>]\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
-   print_command 'if [[ "$1" == "" ]]; then kubectl get svc -A; else kubectl get svc -n $1; fi'
+   print_command " if [[ \"$1\" == \"\" ]]; then kubectl get svc -A; else kubectl get svc -n $1; fi"
    if [[ "$1" == "" ]]; then kubectl get svc -A; else kubectl get svc -n $1; fi
    exit
 fi
+
 if [[ "$1 $2" == "delete service" || "$1" == "kds" ]]; then
-   if [[ "$1" == "kds" ]]; then shift; else shift 2; fi
-   usage="[95mdelete service [96m(kds)[97m <service_name> [37m[<namespace>][97m[0m "
+   [[ "$1" == "kds" ]] && shift || shift 2
+   usage="\x1b[95mdelete service \x1b[96m(kds)\x1b[97m <service_name> \x1b[0m[<namespace>]\x1b[97m\x1b[0m"
    check_params $# 1 "Usage: $usage"
-   print_command 'if [[ "$2" != "" ]]; then kubectl delete svc $1 -n $2; else kubectl delete svc $1; fi'
+   print_command " if [[ \"$2\" != \"\" ]]; then kubectl delete svc $1 -n $2; else kubectl delete svc $1; fi"
    if [[ "$2" != "" ]]; then kubectl delete svc $1 -n $2; else kubectl delete svc $1; fi
    exit
 fi
 section="STATEFULSETS"
+
 if [[ "$1 $2" == "get statefulset" || "$1" == "kgss" ]]; then
-   if [[ "$1" == "kgss" ]]; then shift; else shift 2; fi
-   usage="[95mget statefulset [96m(kgss)[97m [37m[<namespace>][97m[0m "
+   [[ "$1" == "kgss" ]] && shift || shift 2
+   usage="\x1b[95mget statefulset \x1b[96m(kgss)\x1b[97m \x1b[0m[<namespace>]\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
-   print_command 'if [[ "$1" == "" ]]; then kubectl get statefulset -A; else kubectl get statefulset -n $1; fi'
+   print_command " if [[ \"$1\" == \"\" ]]; then kubectl get statefulset -A; else kubectl get statefulset -n $1; fi"
    if [[ "$1" == "" ]]; then kubectl get statefulset -A; else kubectl get statefulset -n $1; fi
    exit
 fi
+
 if [[ "$1 $2" == "delete statefulset" || "$1" == "kdss" ]]; then
-   if [[ "$1" == "kdss" ]]; then shift; else shift 2; fi
-   usage="[95mdelete statefulset [96m(kdss)[97m <statefulset_name> [37m[<namespace>][97m[0m "
+   [[ "$1" == "kdss" ]] && shift || shift 2
+   usage="\x1b[95mdelete statefulset \x1b[96m(kdss)\x1b[97m <statefulset_name> \x1b[0m[<namespace>]\x1b[97m\x1b[0m"
    check_params $# 1 "Usage: $usage"
-   print_command 'if [[ "$2" != "" ]]; then kubectl delete statefulset $1 -n $2; else kubectl delete statefulset $1; fi'
+   print_command " if [[ \"$2\" != \"\" ]]; then kubectl delete statefulset $1 -n $2; else kubectl delete statefulset $1; fi"
    if [[ "$2" != "" ]]; then kubectl delete statefulset $1 -n $2; else kubectl delete statefulset $1; fi
-   exit
-fi
-section="HELP"
-if [[ "$1" == "help" || "$1" == "khe" ]]; then
-   if [[ "$1" == "khe" ]]; then shift; else shift 1; fi
-   usage="[95mhelp [96m(khe)[97m[0m "
-   check_params $# 0 "Usage: $usage"
-   egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/ /; s/.*section=/\x1b[92m/; s/\"//g"
    exit
 fi
 
@@ -188,4 +170,3 @@ else
   echo "$*: invalid option"
 fi
 echo "Try \"kc help\" for more information."
-
