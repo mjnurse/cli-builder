@@ -1,6 +1,6 @@
 # Elasticsearch
 
-*Generated: 2025-11-25 18:35*
+*Generated: 2025-12-12 17:16*
 
 
 ## HELP
@@ -93,7 +93,7 @@
 
 **`add entry (eae) <index_name> <entry_json>`**
 
-**`delete entry (ede) <index_name> [<_id>]`**
+**`delete entry (ede) <index_name> [<_id>]`** - No <id> will mean all documents deleted !! cat /tmp/es_idx_list 2>&1
 
 
 ## NODES

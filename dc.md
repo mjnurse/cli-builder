@@ -1,6 +1,6 @@
 # DC
 
-*Generated: 2025-11-25 18:35*
+*Generated: 2025-12-12 17:16*
 
 
 ## HELP
@@ -14,7 +14,7 @@
 
 **`list containers (dps) [<-d>]`** - -d: show details
 
-**`logs (dlo) <container-name> [<-f>]`** - -f: follow log:q
+**`logs (dlo) <container-name> [<-f>]`** - -f: follow log
 
 **`pull container (dpu) <container_name>`**
 
@@ -28,7 +28,7 @@
 
 **`start container (dst) <container_name> [<-a>]`**
 
-**`stats (ds)`** - Show the CPU, Memory consupmtion of containers
+**`stats (ds)`** - Show the CPU, Memory consumption of containers
 
 **`stop container (dso) <container_name> [<-a>]`** - -a: Stop all containers
 
@@ -50,7 +50,7 @@
 
 **`list networks (dln)`**
 
-**`prune networks (dpn)`** - Remove all unusaed custom networks
+**`prune networks (dpn)`** - Remove all unused custom networks
 
 **`remove network (drn) <network-name>`**
 

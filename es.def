@@ -192,7 +192,10 @@ delete entry (de) <index_name> [<_id>] :: \
         curl -s -X POST "http://localhost:9200/$1/_delete_by_query" -H 'Content-Type: application/json' \
              -d '{ "query": { "ids": { "values": [ "'$2'" ] } } }' | pj; \
     fi \
+    ## No <id> will mean all documents deleted \
     !! cat /tmp/es_idx_list 2>&1
+
+
 
 # ----------------------------------------------------------------------------------------------------------------------------------
 = NODES

@@ -26,7 +26,7 @@ echo -e "\x1b[92m-------------\x1b[0m"
 echo -e "\x1b[92mElasticsearch\x1b[0m"
 echo -e "\x1b[92m-------------\x1b[0m"
 
-echo -e "\x1b[92mgen:2025-11-25 18:35\x1b[0m"
+echo -e "\x1b[92mgen:2025-12-12 17:16\x1b[0m"
 echo
 
             while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/[92m/; s/\"//g")
@@ -377,7 +377,7 @@ fi
 
 if [[ "$1 $2" == "delete entry" || "$1" == "ede" ]]; then
    [[ "$1" == "ede" ]] && shift || shift 2
-   usage="\x1b[95mdelete entry \x1b[96m(ede)\x1b[97m <index_name> \x1b[0m[<_id>]\x1b[97m\x1b[0m"
+   usage="\x1b[95mdelete entry \x1b[96m(ede)\x1b[97m <index_name> \x1b[0m[<_id>]\x1b[97m\x1b[92m # No <id> will mean all documents deleted !! cat /tmp/es_idx_list 2>&1\x1b[0m"
    check_params $# 1 "Usage: $usage"
    print_command " if [[ \"$2\" == \"\" ]]; then read -p \"This will delete ALL RECORDS - Are you sure [yN]? \" yn; if [[ ${yn^} == Y ]]; then curl -s -X POST \"http://localhost:9200/$1/_delete_by_query\" -H 'Content-Type: application/json' -d '{ \"query\": { \"match_all\": {} } }' | pj; fi; else curl -s -X POST \"http://localhost:9200/$1/_delete_by_query\" -H 'Content-Type: application/json' -d '{ \"query\": { \"ids\": { \"values\": [ \"'$2'\" ] } } }' | pj; fi"
    if [[ "$2" == "" ]]; then read -p "This will delete ALL RECORDS - Are you sure [yN]? " yn; if [[ ${yn^} == Y ]]; then curl -s -X POST "http://localhost:9200/$1/_delete_by_query" -H 'Content-Type: application/json' -d '{ "query": { "match_all": {} } }' | pj; fi; else curl -s -X POST "http://localhost:9200/$1/_delete_by_query" -H 'Content-Type: application/json' -d '{ "query": { "ids": { "values": [ "'$2'" ] } } }' | pj; fi

@@ -22,7 +22,7 @@ if [[ "$1" == "help" || "$1" == "dhe" ]]; then
    usage="\x1b[95mhelp \x1b[96m(dhe)\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
    
-echo -e "\x1b[92mgen:2025-11-25 18:35\x1b[0m"
+echo -e "\x1b[92mgen:2025-12-12 17:16\x1b[0m"
 echo
 
             while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/[92m/; s/\"//g")
@@ -50,7 +50,7 @@ fi
 
 if [[ "$1" == "logs" || "$1" == "dlo" ]]; then
    [[ "$1" == "dlo" ]] && shift || shift 1
-   usage="\x1b[95mlogs \x1b[96m(dlo)\x1b[97m <container-name> \x1b[0m[<-f>]\x1b[97m\x1b[92m # -f: follow log:q\x1b[0m"
+   usage="\x1b[95mlogs \x1b[96m(dlo)\x1b[97m <container-name> \x1b[0m[<-f>]\x1b[97m\x1b[92m # -f: follow log\x1b[0m"
    check_params $# 1 "Usage: $usage"
    print_command " if [[ $1 == -f ]]; then docker logs -f $2; else docker logs $1; fi"
    if [[ $1 == -f ]]; then docker logs -f $2; else docker logs $1; fi
@@ -113,7 +113,7 @@ fi
 
 if [[ "$1" == "stats" || "$1" == "ds" ]]; then
    [[ "$1" == "ds" ]] && shift || shift 1
-   usage="\x1b[95mstats \x1b[96m(ds)\x1b[97m\x1b[92m # Show the CPU, Memory consupmtion of containers\x1b[0m"
+   usage="\x1b[95mstats \x1b[96m(ds)\x1b[97m\x1b[92m # Show the CPU, Memory consumption of containers\x1b[0m"
    check_params $# 0 "Usage: $usage"
    print_command " docker stats"
    docker stats
@@ -187,7 +187,7 @@ fi
 
 if [[ "$1 $2" == "prune networks" || "$1" == "dpn" ]]; then
    [[ "$1" == "dpn" ]] && shift || shift 2
-   usage="\x1b[95mprune networks \x1b[96m(dpn)\x1b[97m\x1b[92m # Remove all unusaed custom networks\x1b[0m"
+   usage="\x1b[95mprune networks \x1b[96m(dpn)\x1b[97m\x1b[92m # Remove all unused custom networks\x1b[0m"
    check_params $# 0 "Usage: $usage"
    print_command " docker network prune"
    docker network prune

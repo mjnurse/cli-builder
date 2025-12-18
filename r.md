@@ -1,6 +1,6 @@
 # Runs Things
 
-*Generated: 2025-11-25 18:35*
+*Generated: 2025-12-12 17:16*
 
 
 ## HELP
@@ -10,7 +10,7 @@
 
 ## MDM
 
-**`start mdm (rsm) [<streaming|ui|all|k(afka)>|kapp>]`**
+**`start mdm (rsm) [<streaming|ui|all|k(afka)>|kapp>]`** - kapp starts kafka streaming for the application data source
 
 **`halt mdm (rhm)`**
 

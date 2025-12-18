@@ -24,7 +24,7 @@ list containers (ps) [<-d>] :: \
 logs (lo) [<-f>] <container-name> :: \
     if [[ $1 == -f ]]; then docker logs -f $2; else docker logs $1; fi \
     !! docker ps --all --format '{{.Names}}' \
-    ## -f: follow log:q
+    ## -f: follow log
 
 pull container (pu) <container_name> :: \
     docker pull $1
@@ -61,7 +61,7 @@ shell (sh) [<-s>] [<-r>] <container_name> :: \
 start container (st) [<-a>] <container_name> :: docker start $1 \
     !! docker ps --all --format '{{.Names}}'
 
-stats (s) :: docker stats ## Show the CPU, Memory consupmtion of containers
+stats (s) :: docker stats ## Show the CPU, Memory consumption of containers
 
 stop container (so) [<-a>] <container_name> :: \
     if [[ $1 == -a ]]; then \
@@ -113,7 +113,7 @@ compose up (cup) [<service>] :: \
 
 list networks (ln) :: docker network ls
 
-prune networks (pn) :: docker network prune ## Remove all unusaed custom networks
+prune networks (pn) :: docker network prune ## Remove all unused custom networks
 
 remove network (rn) <network-name> :: docker network rm $1 !! docker network ls --format '{{.Name}}'
 
