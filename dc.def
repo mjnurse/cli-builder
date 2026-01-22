@@ -79,6 +79,14 @@ stop container (so) [<-a>] <container_name> :: \
 = COMPOSE
 # -------------------------------------------------------------------------------------------------
 
+compose build (cb) :: \
+    if [[ "$1" == "" ]]; then \
+        docker compose build; \
+    else \
+        docker compose -f $1 build; \
+    fi; \
+    ## Build containers
+
 compose down (cdo) [<service>] :: \
     if [[ "$1" == "" ]]; then \
         docker compose down; \
@@ -106,6 +114,14 @@ compose up (cup) [<service>] :: \
         docker compose -f $1 up -d; \
     fi; \
     ## Deploy and run containers, networks
+
+compose build up (cbup) [<service>] :: \
+    if [[ "$1" == "" ]]; then \
+        docker compose up -d --build; \
+    else \
+        docker compose -f $1 up -d --build; \
+    fi; \
+    ## Build, deploy and run containers, networks
 
 # -------------------------------------------------------------------------------------------------
 = NETWORKS

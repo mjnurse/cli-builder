@@ -1,6 +1,6 @@
 # DC
 
-*Generated: 2025-12-12 17:16*
+*Generated: 2026-01-22 09:10*
 
 
 ## HELP
@@ -35,6 +35,8 @@
 
 ## COMPOSE
 
+**`compose build (dcb)`** - Build containers
+
 **`compose down (dcdo) [<service>]`** - Stop and remove containers, networks
 
 **`compose list (dcls)`**
@@ -44,6 +46,8 @@
 **`compose top (dct)`**
 
 **`compose up (dcup) [<service>]`** - Deploy and run containers, networks
+
+**`compose build up (dcbup) [<service>]`** - Build, deploy and run containers, networks
 
 
 ## NETWORKS

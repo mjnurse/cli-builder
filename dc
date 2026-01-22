@@ -22,7 +22,7 @@ if [[ "$1" == "help" || "$1" == "dhe" ]]; then
    usage="\x1b[95mhelp \x1b[96m(dhe)\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
    
-echo -e "\x1b[92mgen:2025-12-12 17:16\x1b[0m"
+echo -e "\x1b[92mgen:2026-01-22 09:10\x1b[0m"
 echo
 
             while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/[92m/; s/\"//g")
@@ -130,6 +130,15 @@ if [[ "$1 $2" == "stop container" || "$1" == "dso" ]]; then
 fi
 section="COMPOSE"
 
+if [[ "$1 $2" == "compose build" || "$1" == "dcb" ]]; then
+   [[ "$1" == "dcb" ]] && shift || shift 2
+   usage="\x1b[95mcompose build \x1b[96m(dcb)\x1b[97m\x1b[92m # Build containers\x1b[0m"
+   check_params $# 0 "Usage: $usage"
+   print_command " if [[ \"$1\" == \"\" ]]; then docker compose build; else docker compose -f $1 build; fi;"
+   if [[ "$1" == "" ]]; then docker compose build; else docker compose -f $1 build; fi;
+   exit
+fi
+
 if [[ "$1 $2" == "compose down" || "$1" == "dcdo" ]]; then
    [[ "$1" == "dcdo" ]] && shift || shift 2
    usage="\x1b[95mcompose down \x1b[96m(dcdo)\x1b[97m \x1b[0m[<service>]\x1b[97m\x1b[92m # Stop and remove containers, networks\x1b[0m"
@@ -172,6 +181,15 @@ if [[ "$1 $2" == "compose up" || "$1" == "dcup" ]]; then
    check_params $# 0 "Usage: $usage"
    print_command " if [[ \"$1\" == \"\" ]]; then docker compose up -d; else docker compose -f $1 up -d; fi;"
    if [[ "$1" == "" ]]; then docker compose up -d; else docker compose -f $1 up -d; fi;
+   exit
+fi
+
+if [[ "$1 $2 $3" == "compose build up" || "$1" == "dcbup" ]]; then
+   [[ "$1" == "dcbup" ]] && shift || shift 3
+   usage="\x1b[95mcompose build up \x1b[96m(dcbup)\x1b[97m \x1b[0m[<service>]\x1b[97m\x1b[92m # Build, deploy and run containers, networks\x1b[0m"
+   check_params $# 0 "Usage: $usage"
+   print_command " if [[ \"$1\" == \"\" ]]; then docker compose up -d --build; else docker compose -f $1 up -d --build; fi;"
+   if [[ "$1" == "" ]]; then docker compose up -d --build; else docker compose -f $1 up -d --build; fi;
    exit
 fi
 section="NETWORKS"
