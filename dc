@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 debug_yn=n
 [[ "$1" == "-d" ]] && { debug_yn=y; shift; }
 [[ "${CLI_DEBUG^^}" == "TRUE" ]] && debug_yn=y
@@ -22,7 +22,7 @@ if [[ "$1" == "help" || "$1" == "dhe" ]]; then
    usage="\x1b[95mhelp \x1b[96m(dhe)\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
    
-echo -e "\x1b[92mgen:2026-01-22 09:10\x1b[0m"
+echo -e "\x1b[92mgen:2026-01-26 13:50\x1b[0m"
 echo
 
             while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/[92m/; s/\"//g")

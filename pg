@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 debug_yn=n
 [[ "$1" == "-d" ]] && { debug_yn=y; shift; }
 [[ "${CLI_DEBUG^^}" == "TRUE" ]] && debug_yn=y
@@ -26,7 +26,7 @@ echo -e "\x1b[92m-------------\x1b[0m"
 echo -e "\x1b[92mPostgres PSQL\x1b[0m"
 echo -e "\x1b[92m-------------\x1b[0m"
 
-echo -e "\x1b[92mgen:2025-12-12 17:16\x1b[0m"
+echo -e "\x1b[92mgen:2026-01-26 13:50\x1b[0m"
 echo
 
             while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/[92m/; s/\"//g")

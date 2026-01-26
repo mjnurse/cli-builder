@@ -211,7 +211,7 @@ echo
 def gen_script(cli_name, cmds, debug=False):
     """Generate bash CLI script"""
 
-    script = f'''#!/bin/bash
+    script = f'''#!/usr/bin/env bash
 debug_yn=n
 [[ "$1" == "-d" ]] && {{ debug_yn=y; shift; }}
 [[ "${{CLI_DEBUG^^}}" == "TRUE" ]] && debug_yn=y
