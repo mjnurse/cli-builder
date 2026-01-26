@@ -87,6 +87,8 @@ compose build (cb) :: \
     fi; \
     ## Build containers
 
+# docker compose build --no-cache --progress=plain
+
 compose down (cdo) [<service>] :: \
     if [[ "$1" == "" ]]; then \
         docker compose down; \
