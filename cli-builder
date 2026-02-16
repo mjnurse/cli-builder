@@ -11,7 +11,7 @@ C_MAG="\\x1b[95m"
 C_WHI="\\x1b[97m" 
 C_DEF="\\x1b[0m"
 
-HELP_TEXT = """
+HELP_TEXT = r"""
 NAME
   cli-builder - Generate CLI bash scripts from definition files.
 

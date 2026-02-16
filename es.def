@@ -118,7 +118,7 @@ create index (ci) <index_name> <number_of_shards> <number_of_replicas> :: \
     !! cat /tmp/es_idx_list 2>&1
 
 create index from mapping (cifm) <index_name> <number_of_shards> <number_of_replicas> <mapping-json> :: \
-    curl -s -X PUT "http://$ES_HOST:$ES_PORT/$1" -H 'Content-Type: application/json' -d '{"settings":{"index":{"number_of_shards":'$2',"number_of_replicas":'$3'}},"mappings":'$4'}' \
+    curl -s -X PUT "http://$ES_HOST:$ES_PORT/$1" -H 'Content-Type: application/json' -d '{"settings":{"index":{"number_of_shards":'$2',"number_of_replicas":'$3'}},"mappings":'"$4"'}' \
     !! cat /tmp/es_idx_list 2>&1
 
 clone index (clni) <index_name> <new_index_name> :: \

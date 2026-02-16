@@ -26,7 +26,7 @@ echo -e "\x1b[92m-------------\x1b[0m"
 echo -e "\x1b[92mElasticsearch\x1b[0m"
 echo -e "\x1b[92m-------------\x1b[0m"
 
-echo -e "\x1b[92mgen:2026-01-26 13:50\x1b[0m"
+echo -e "\x1b[92mgen:2026-02-12 10:41\x1b[0m"
 echo
 
             while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/[92m/; s/\"//g")
@@ -243,8 +243,8 @@ if [[ "$1 $2 $3 $4" == "create index from mapping" || "$1" == "ecifm" ]]; then
    [[ "$1" == "ecifm" ]] && shift || shift 4
    usage="\x1b[95mcreate index from mapping \x1b[96m(ecifm)\x1b[97m <index_name> <number_of_shards> <number_of_replicas> <mapping-json>\x1b[0m"
    check_params $# 4 "Usage: $usage"
-   print_command " curl -s -X PUT \"http://$ES_HOST:$ES_PORT/$1\" -H 'Content-Type: application/json' -d '{\"settings\":{\"index\":{\"number_of_shards\":'$2',\"number_of_replicas\":'$3'}},\"mappings\":'$4'}'"
-   curl -s -X PUT "http://$ES_HOST:$ES_PORT/$1" -H 'Content-Type: application/json' -d '{"settings":{"index":{"number_of_shards":'$2',"number_of_replicas":'$3'}},"mappings":'$4'}'
+   print_command " curl -s -X PUT \"http://$ES_HOST:$ES_PORT/$1\" -H 'Content-Type: application/json' -d '{\"settings\":{\"index\":{\"number_of_shards\":'$2',\"number_of_replicas\":'$3'}},\"mappings\":'\"$4\"'}'"
+   curl -s -X PUT "http://$ES_HOST:$ES_PORT/$1" -H 'Content-Type: application/json' -d '{"settings":{"index":{"number_of_shards":'$2',"number_of_replicas":'$3'}},"mappings":'"$4"'}'
    exit
 fi
 
