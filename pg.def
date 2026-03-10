@@ -32,8 +32,23 @@ set connection defaults (scd) <host> <port> <db_name> <username> <password> :: \
 describe (d) <db_name> <schema_name> <object_name> :: \
     psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c "\d \"$2\".\"$3\""
 
+cmd cld=' \
+    SELECT \
+    d.datname        AS "Name", \
+    pg_get_userbyid(d.datdba) AS "Owner", \
+    pg_encoding_to_char(d.encoding) AS "Encoding", \
+    d.datcollate     AS "Collate", \
+    d.datctype       AS "Ctype", \
+    t.spcname        AS "Tablespace", \
+    d.datallowconn   AS "Allow Conn", \
+    d.datconnlimit   AS "Conn Limit"\ 
+    FROM pg_database d \
+    LEFT JOIN pg_tablespace t ON t.oid = d.dattablespace \
+    ORDER BY d.datname'
+
 list databases (ld) :: \
-    psql --host $PG_HOST -p $PG_PORT -d $PG_DB -U $PG_USER -c "\l"
+    psql --host $PG_HOST -p $PG_PORT -U $PG_USER -c "$cld";
+    # psql --host $PG_HOST -p $PG_PORT -d $PG_DB -U $PG_USER -c "\l"
 
 cmd iq=" \
     SELECT \

@@ -26,7 +26,7 @@ echo -e "\x1b[92m-------------\x1b[0m"
 echo -e "\x1b[92mPostgres PSQL\x1b[0m"
 echo -e "\x1b[92m-------------\x1b[0m"
 
-echo -e "\x1b[92mgen:2026-01-26 13:50\x1b[0m"
+echo -e "\x1b[92mgen:2026-03-09 18:12\x1b[0m"
 echo
 
             while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/[92m/; s/\"//g")
@@ -69,13 +69,14 @@ if [[ "$1" == "describe" || "$1" == "pd" ]]; then
    psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c "\d \"$2\".\"$3\""
    exit
 fi
+cld=' SELECT d.datname        AS "Name", pg_get_userbyid(d.datdba) AS "Owner", pg_encoding_to_char(d.encoding) AS "Encoding", d.datcollate     AS "Collate", d.datctype       AS "Ctype", t.spcname        AS "Tablespace", d.datallowconn   AS "Allow Conn", d.datconnlimit   AS "Conn Limit"FROM pg_database d LEFT JOIN pg_tablespace t ON t.oid = d.dattablespace ORDER BY d.datname'
 
 if [[ "$1 $2" == "list databases" || "$1" == "pld" ]]; then
    [[ "$1" == "pld" ]] && shift || shift 2
    usage="\x1b[95mlist databases \x1b[96m(pld)\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
-   print_command " psql --host $PG_HOST -p $PG_PORT -d $PG_DB -U $PG_USER -c \"\l\""
-   psql --host $PG_HOST -p $PG_PORT -d $PG_DB -U $PG_USER -c "\l"
+   print_command " psql --host $PG_HOST -p $PG_PORT -U $PG_USER -c \"$cld\";"
+   psql --host $PG_HOST -p $PG_PORT -U $PG_USER -c "$cld";
    exit
 fi
 iq=" SELECT n.nspname AS schema_name, c.relname AS index_name, t.relname AS table_name, r.rolname AS owner, pg_size_pretty(pg_relation_size(c.oid)) AS index_size FROM pg_class c JOIN pg_index i ON c.oid = i.indexrelid JOIN pg_class t ON i.indrelid = t.oid JOIN pg_namespace n ON n.oid = c.relnamespace JOIN pg_roles r ON r.oid = c.relowner WHERE c.relkind = 'i' AND n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast') AND (LOWER(n.nspname) = LOWER('SCHEMANAME') OR 'SCHEMANAME' = '') ORDER BY 1, 2"

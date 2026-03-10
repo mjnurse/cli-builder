@@ -1,6 +1,6 @@
 # Postgres PSQL
 
-*Generated: 2026-01-26 13:50*
+*Generated: 2026-03-09 18:12*
 
 
 ## HELP
