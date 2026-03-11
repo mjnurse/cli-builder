@@ -145,3 +145,9 @@ system prune all (spa) :: \
         docker system prune -a; \
     fi \
     ## Remove ALL unused containers, images, networks, and build cache
+
+# -------------------------------------------------------------------------------------------------
+= VOLUMES
+# -------------------------------------------------------------------------------------------------
+
+volume ls (vls) :: docker volume ls

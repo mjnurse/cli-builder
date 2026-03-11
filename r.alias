@@ -1,0 +1,27 @@
+# Completion function
+_r_complete() {
+    local cur prev all
+    all=""
+    for ((i = 1; i < ${#COMP_WORDS[@]}; i++)); do
+        word="${COMP_WORDS[i]}"
+        [[ $word != -* ]] && all+="$word "
+    done
+    all="$(echo $all | xargs)"
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev_step=1
+    prev="${COMP_WORDS[COMP_CWORD-$prev_step]}"
+    while [[ "${prev:0:1}" == "-" ]]; do
+        let prev_step=prev_step+1
+        prev="${COMP_WORDS[COMP_CWORD-$prev_step]}"
+    done
+
+}
+complete -F _r_complete r @rhe @rsm @rhm @rse @rsp @rcba
+
+# Shortcut aliases
+alias @rhe='r rhe'
+alias @rsm='r rsm'
+alias @rhm='r rhm'
+alias @rse='r rse'
+alias @rsp='r rsp'
+alias @rcba='r rcba'
