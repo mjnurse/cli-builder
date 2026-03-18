@@ -22,20 +22,29 @@ if [[ "$1" == "help" || "$1" == "rhe" ]]; then
    usage="\x1b[95mhelp \x1b[96m(rhe)\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
    
-echo -e "\x1b[92mgen:2026-03-09 17:43\x1b[0m"
+echo -e "\x1b[92mgen:2026-03-18 15:00\x1b[0m"
 echo
 
-            while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/[92m/; s/\"//g")
+            while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/\x1b[92m/; s/\"//g")
    exit
 fi
 section="MDM"
 
 if [[ "$1 $2" == "start mdm" || "$1" == "rsm" ]]; then
    [[ "$1" == "rsm" ]] && shift || shift 2
-   usage="\x1b[95mstart mdm \x1b[96m(rsm)\x1b[97m \x1b[0m[<streaming|ui|all|k(afka)>|kapp>]\x1b[97m\x1b[92m # kapp starts kafka streaming for the application data source\x1b[0m"
+   usage="\x1b[95mstart mdm \x1b[96m(rsm)\x1b[97m [streaming|ui|all|k(afka)>|kapp]\x1b[92m # kapp starts kafka streaming for the application data source\x1b[0m"
    check_params $# 0 "Usage: $usage"
    print_command " mjn-start-mdm $1"
    mjn-start-mdm $1
+   exit
+fi
+
+if [[ "$1 $2" == "restart mdm" || "$1" == "rsm" ]]; then
+   [[ "$1" == "rsm" ]] && shift || shift 2
+   usage="\x1b[95mrestart mdm \x1b[96m(rsm)\x1b[97m [streaming|ui|all|k(afka)>|kapp]\x1b[92m # kapp starts kafka streaming for the application data source\x1b[0m"
+   check_params $# 0 "Usage: $usage"
+   print_command " mjn-stop-mdm; mjn-start-mdm $1"
+   mjn-stop-mdm; mjn-start-mdm $1
    exit
 fi
 
@@ -82,4 +91,4 @@ if [[ "$1" == "" ]]; then
 else
   echo "$*: invalid option"
 fi
-echo "Try \"r help\" for more information."
+echo "Try "r help" for more information."

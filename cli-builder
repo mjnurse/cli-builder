@@ -101,21 +101,25 @@ class Cmd:
     """Represents a CLI command"""
     keys: List[str]
     shortcut: str
-    params: List[str]
-    opt_params: List[str]
+    params: List[tuple[str, bool]]  # (name, is_optional)
     cmd: str
     help: str
     comp: str
-    
+
     @property
     def all_keys(self): return ' '.join(self.keys)
+
     @property
-    def num_mandatory(self): return len(self.params)
+    def num_mandatory(self): return sum(1 for _, opt in self.params if not opt)
+
     @property
     def usage_str(self):
-        params = ' '.join(f'<{p}>' for p in self.params)
-        opts = ' '.join(f'[{p}]' for p in self.opt_params)
-        return f"{self.all_keys} ({self.shortcut}) {params} {opts}".strip()
+        params_str = ' '.join(f'[{p}]' if opt else f'<{p}>' for p, opt in self.params)
+        return f"{self.all_keys} ({self.shortcut}) {params_str}".strip()
+
+    @property
+    def opt_params(self):
+        return [p for p, opt in self.params if opt]
 
 def parse_def(lines, title, cli_name):
     """Parse definition file into commands and groups"""
@@ -138,9 +142,8 @@ echo
             keys=['help'],
             shortcut=cli_name[0] + 'he',
             params=[],
-            opt_params=[],
             cmd=title_str + f'''
-            while IFS= read -r line; do echo -e "${{line}}${{CRESET}}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/\x1b[92m/; s/\\"//g")''',
+            while IFS= read -r line; do echo -e "${{line}}${{CRESET}}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/\\x1b[92m/; s/\\"//g")''',
             help='',
             comp=''
         ), 'HELP'))
@@ -176,19 +179,15 @@ echo
         
         # Parse command definition
         tokens = re.findall(r'\w+|\([^)]+\)|<[^>]+>|\[[^\]]+\]', defn)
-        keys, params, opt_params, shortcut = [], [], [], ''
-        in_opt = False
-        
+        keys, params, shortcut = [], [], ''
+
         for tok in tokens:
-            if tok.startswith('['):
-                in_opt = True
             if tok.startswith('('):
                 shortcut = cli_name[0] + tok.strip('()')
-            elif tok.endswith(']'):
-                opt_params.append(tok.strip('<[]>'))
-                in_opt = False
+            elif tok.startswith('['):
+                params.append((tok.strip('[]<>'), True))
             elif tok.startswith('<'):
-                (opt_params if in_opt else params).append(tok.strip('<>'))
+                params.append((tok.strip('<>'), False))
             else:
                 keys.append(tok)
         
@@ -200,7 +199,6 @@ echo
             keys=keys,
             shortcut=shortcut,
             params=params,
-            opt_params=opt_params,
             cmd=cmd,
             help=help_txt.group(1) if help_txt else '',
             comp=comp_cmd.group(1) if comp_cmd else ''
@@ -248,13 +246,11 @@ print_command() {{
         # Generate command check
         keys_template = ' '.join(f'${i+1}' for i in range(len(cmd.keys)))
         usage = f"{C_MAG}{cmd.all_keys} {C_CYA}({cmd.shortcut}){C_WHI}"
-        for p in cmd.params:
-            usage += f" <{p}>"
-        if cmd.opt_params:
-            usage += f" {C_DEF}["
-            for p in cmd.opt_params:
-                usage += f"<{p}> "
-            usage = usage[:-1] + f"]{C_WHI}"
+        for p, opt in cmd.params:
+            if opt:
+                usage += f" [{p}]"
+            else:
+                usage += f" <{p}>"
         if cmd.help:
             usage += f"{C_GRE} # {cmd.help}"
         usage += f"{C_DEF}"
@@ -287,7 +283,7 @@ if [[ "$1" == "" ]]; then
 else
   echo "$*: invalid option"
 fi
-echo "Try \\"{cli_name} help\\" for more information."
+echo "Try \"{cli_name} help\" for more information."
 '''
     
     return script, aliases, comp_opts
@@ -342,13 +338,11 @@ def gen_markdown_file(cli_name, cmds, title):
 
         # Format command usage
         usage = f"{cmd.all_keys} ({cmd.shortcut})"
-        for p in cmd.params:
-            usage += f" <{p}>"
-        if cmd.opt_params:
-            usage += " ["
-            for p in cmd.opt_params:
-                usage += f"<{p}> "
-            usage = usage.rstrip() + "]"
+        for p, opt in cmd.params:
+            if opt:
+                usage += f" [{p}]"
+            else:
+                usage += f" <{p}>"
 
         # Add command entry
         md_content += f"**`{usage}`**"

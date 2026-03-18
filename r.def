@@ -6,6 +6,11 @@ start mdm (sm) [<streaming|ui|all|k(afka)>|kapp>] :: \
     mjn-start-mdm $1 \
     ## kapp starts kafka streaming for the application data source
 
+restart mdm (sm) [<streaming|ui|all|k(afka)>|kapp>] :: \
+    mjn-stop-mdm; \
+    mjn-start-mdm $1 \
+    ## kapp starts kafka streaming for the application data source
+
 halt mdm (hm) :: \
     mjn-stop-mdm
 

@@ -1,6 +1,6 @@
 # KC
 
-*Generated: 2026-01-26 13:50*
+*Generated: 2026-03-18 15:00*
 
 
 ## HELP
@@ -10,14 +10,14 @@
 
 ## ALL
 
-**`get all (kga) [<namespace>]`**
+**`get all (kga) [namespace]`**
 
 **`get (kg) <item>`**
 
 
 ## LOGS
 
-**`logs (kl) <pod_name> [<namespace>]`**
+**`logs (kl) <pod_name> [namespace]`**
 
 
 ## NODES
@@ -27,38 +27,38 @@
 
 ## PODS
 
-**`get pods (kgp) [<namespace>]`**
+**`get pods (kgp) [namespace]`**
 
-**`delete pod (kdp) <pod_name> [<namespace>]`**
+**`delete pod (kdp) <pod_name> [namespace]`**
 
 
 ## PERSISTENT VOLUMES
 
-**`get persistent volumes (kgpv) [<namespace>]`**
+**`get persistent volumes (kgpv) [namespace]`**
 
 
 ## PERSISTENT VOLUME CLAIMS
 
-**`get persistent volume claims (kgpvc) [<namespace>]`**
+**`get persistent volume claims (kgpvc) [namespace]`**
 
 
 ## SECRETS
 
-**`get secrets (kgse) [<namespace>]`**
+**`get secrets (kgse) [namespace]`**
 
-**`delete service (kdse) <secret_name> [<namespace>]`**
+**`delete service (kdse) <secret_name> [namespace]`**
 
 
 ## SERVICES
 
-**`get services (kgs) [<namespace>]`**
+**`get services (kgs) [namespace]`**
 
-**`delete service (kds) <service_name> [<namespace>]`**
+**`delete service (kds) <service_name> [namespace]`**
 
 
 ## STATEFULSETS
 
-**`get statefulset (kgss) [<namespace>]`**
+**`get statefulset (kgss) [namespace]`**
 
-**`delete statefulset (kdss) <statefulset_name> [<namespace>]`**
+**`delete statefulset (kdss) <statefulset_name> [namespace]`**
 

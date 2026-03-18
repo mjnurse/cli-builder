@@ -1,6 +1,6 @@
 # GI
 
-*Generated: 2026-01-26 13:50*
+*Generated: 2026-03-18 15:00*
 
 
 ## HELP
@@ -10,7 +10,7 @@
 
 ## GENERAL
 
-**`add commit push (gacp) [<-f|--force> <message>]`**
+**`add commit push (gacp) [-f|--force] [message]`**
 
 **`list branches local (glbl)`**
 

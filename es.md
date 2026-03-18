@@ -1,6 +1,6 @@
 # Elasticsearch
 
-*Generated: 2026-02-12 10:41*
+*Generated: 2026-03-18 15:00*
 
 
 ## HELP
@@ -10,7 +10,7 @@
 
 ## CLUSTER
 
-**`clear cache (ecc) [<index_name>]`**
+**`clear cache (ecc) [index_name]`**
 
 **`cluster overview (eco)`**
 
@@ -25,23 +25,23 @@
 
 **`count (ec) <index_name>`**
 
-**`list aliases (ela) [<filter> <order_by_field_name>]`**
+**`list aliases (ela) [filter] [order_by_field_name]`**
 
-**`list indices (eli) [<index_name>]`**
+**`list indices (eli) [index_name]`**
 
-**`list open (elo) [<index_name>]`**
+**`list open (elo) [index_name]`**
 
 **`list dot indices (eldi)`**
 
-**`list shards (els) [<index_name> <order_by_field_name>]`**
+**`list shards (els) [index_name] [order_by_field_name]`**
 
-**`list shard details (elsd) [<index_name> <order_by_field_name>]`**
+**`list shard details (elsd) [index_name] [order_by_field_name]`**
 
-**`list segments (ele) [<index_name>]`**
+**`list segments (ele) [index_name]`**
 
-**`list segmented shards (elss) [<index_name>]`**
+**`list segmented shards (elss) [index_name]`**
 
-**`list avg segments per shard (elass) [<index_name>]`**
+**`list avg segments per shard (elass) [index_name]`**
 
 **`list fields (elf) <index_name>`**
 
@@ -93,7 +93,7 @@
 
 **`add entry (eae) <index_name> <entry_json>`**
 
-**`delete entry (ede) <index_name> [<_id>]`** - No <id> will mean all documents deleted !! cat /tmp/es_idx_list 2>&1
+**`delete entry (ede) <index_name> [_id]`** - No <id> will mean all documents deleted !! cat /tmp/es_idx_list 2>&1
 
 
 ## NODES
@@ -115,7 +115,7 @@
 
 ## SEARCH
 
-**`search (es) <index_name> [<search_term>]`**
+**`search (es) <index_name> [search_term]`**
 
 **`search json (esj) <index_name> <search_json>`**
 
@@ -133,9 +133,9 @@
 
 ## TASKS
 
-**`list tasks (elt) [<sort_field>]`**
+**`list tasks (elt) [sort_field]`**
 
-**`list tasks detail (eltd) [<sort_field>]`**
+**`list tasks detail (eltd) [sort_field]`**
 
 
 ## REPOS / SNAPSHOTS

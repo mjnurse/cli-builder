@@ -26,10 +26,10 @@ echo -e "\x1b[92m-------------\x1b[0m"
 echo -e "\x1b[92mPostgres PSQL\x1b[0m"
 echo -e "\x1b[92m-------------\x1b[0m"
 
-echo -e "\x1b[92mgen:2026-03-09 18:12\x1b[0m"
+echo -e "\x1b[92mgen:2026-03-18 15:00\x1b[0m"
 echo
 
-            while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/[92m/; s/\"//g")
+            while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/\x1b[92m/; s/\"//g")
    exit
 fi
 [ -f ./pg_conn_defaults ] && source ./pg_conn_defaults
@@ -44,7 +44,7 @@ section="SESSION"
 
 if [[ "$1" == "connect" || "$1" == "pc" ]]; then
    [[ "$1" == "pc" ]] && shift || shift 1
-   usage="\x1b[95mconnect \x1b[96m(pc)\x1b[97m \x1b[0m[<db_name>]\x1b[97m\x1b[0m"
+   usage="\x1b[95mconnect \x1b[96m(pc)\x1b[97m [db_name]\x1b[0m"
    check_params $# 0 "Usage: $usage"
    print_command " psql --host $PG_HOST -p $PG_PORT -d ${1:-$PG_DB} -U $PG_USER"
    psql --host $PG_HOST -p $PG_PORT -d ${1:-$PG_DB} -U $PG_USER
@@ -83,7 +83,7 @@ iq=" SELECT n.nspname AS schema_name, c.relname AS index_name, t.relname AS tabl
 
 if [[ "$1 $2" == "list indices" || "$1" == "pli" ]]; then
    [[ "$1" == "pli" ]] && shift || shift 2
-   usage="\x1b[95mlist indices \x1b[96m(pli)\x1b[97m <db_name> \x1b[0m[<schema_name>]\x1b[97m\x1b[0m"
+   usage="\x1b[95mlist indices \x1b[96m(pli)\x1b[97m <db_name> [schema_name]\x1b[0m"
    check_params $# 1 "Usage: $usage"
    print_command " psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c \"${iq//SCHEMANAME/$2}\";"
    psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c "${iq//SCHEMANAME/$2}";
@@ -93,7 +93,7 @@ sq=" SELECT n.nspname AS schema_name, r.rolname AS owner, pg_size_pretty(SUM(pg_
 
 if [[ "$1 $2" == "list schema" || "$1" == "pls" ]]; then
    [[ "$1" == "pls" ]] && shift || shift 2
-   usage="\x1b[95mlist schema \x1b[96m(pls)\x1b[97m \x1b[0m[<db_name>]\x1b[97m\x1b[0m"
+   usage="\x1b[95mlist schema \x1b[96m(pls)\x1b[97m [db_name]\x1b[0m"
    check_params $# 0 "Usage: $usage"
    print_command " echo \"DATABASE: ${1:-$PG_DB}\"; psql --host $PG_HOST -p $PG_PORT -d ${1:-$PG_DB} -U $PG_USER -c \"${sq}\";"
    echo "DATABASE: ${1:-$PG_DB}"; psql --host $PG_HOST -p $PG_PORT -d ${1:-$PG_DB} -U $PG_USER -c "${sq}";
@@ -103,7 +103,7 @@ tq=" SELECT n.nspname AS schema_name, c.relname AS table_name, r.rolname AS owne
 
 if [[ "$1 $2" == "list tables" || "$1" == "plt" ]]; then
    [[ "$1" == "plt" ]] && shift || shift 2
-   usage="\x1b[95mlist tables \x1b[96m(plt)\x1b[97m <db_name> \x1b[0m[<schema_name>]\x1b[97m\x1b[0m"
+   usage="\x1b[95mlist tables \x1b[96m(plt)\x1b[97m <db_name> [schema_name]\x1b[0m"
    check_params $# 1 "Usage: $usage"
    print_command " psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c \"${tq//SCHEMANAME/$2}\""
    psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c "${tq//SCHEMANAME/$2}"
@@ -123,7 +123,7 @@ section="QUERY"
 
 if [[ "$1 $2" == "select all" || "$1" == "psa" ]]; then
    [[ "$1" == "psa" ]] && shift || shift 2
-   usage="\x1b[95mselect all \x1b[96m(psa)\x1b[97m <db_name> <table_name> \x1b[0m[<schema_name>]\x1b[97m\x1b[0m"
+   usage="\x1b[95mselect all \x1b[96m(psa)\x1b[97m <db_name> [schema_name] <table_name>\x1b[0m"
    check_params $# 2 "Usage: $usage"
    print_command " if [[ \"$3\" == \"\" ]]; then tn=\"\\"$2\\"\"; sn=\"\"; else tn=\"\\"$3\\"\"; sn=\"\\"$2\\".\"; fi; psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c 'SELECT * FROM '${sn}${tn}"
    if [[ "$3" == "" ]]; then tn="\"$2\""; sn=""; else tn="\"$3\""; sn="\"$2\"."; fi; psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c 'SELECT * FROM '${sn}${tn}
@@ -135,4 +135,4 @@ if [[ "$1" == "" ]]; then
 else
   echo "$*: invalid option"
 fi
-echo "Try \"pg help\" for more information."
+echo "Try "pg help" for more information."

@@ -22,17 +22,17 @@ if [[ "$1" == "help" || "$1" == "ghe" ]]; then
    usage="\x1b[95mhelp \x1b[96m(ghe)\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
    
-echo -e "\x1b[92mgen:2026-01-26 13:50\x1b[0m"
+echo -e "\x1b[92mgen:2026-03-18 15:00\x1b[0m"
 echo
 
-            while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/[92m/; s/\"//g")
+            while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/\x1b[92m/; s/\"//g")
    exit
 fi
 section="GENERAL"
 
 if [[ "$1 $2 $3" == "add commit push" || "$1" == "gacp" ]]; then
    [[ "$1" == "gacp" ]] && shift || shift 3
-   usage="\x1b[95madd commit push \x1b[96m(gacp)\x1b[97m \x1b[0m[<-f|--force> <message>]\x1b[97m\x1b[0m"
+   usage="\x1b[95madd commit push \x1b[96m(gacp)\x1b[97m [-f|--force] [message]\x1b[0m"
    check_params $# 0 "Usage: $usage"
    print_command " force_yn=n; if [[ $1 == -f || $1 == --force ]]; then force_yn=y; shift; fi; if [[ \"$1\" == \"\" ]]; then message=\"Various\"; else message=\"$1\"; fi; [ -f ./gen-readme ] && ./gen-readme; git add .; git status; if [[ \"$1\" != \"-f\" ]]; then read -p 'Press a key to continue, CTRL-C to abort' dummy; fi; git commit -m 'Various'; git push origin"
    force_yn=n; if [[ $1 == -f || $1 == --force ]]; then force_yn=y; shift; fi; if [[ "$1" == "" ]]; then message="Various"; else message="$1"; fi; [ -f ./gen-readme ] && ./gen-readme; git add .; git status; if [[ "$1" != "-f" ]]; then read -p 'Press a key to continue, CTRL-C to abort' dummy; fi; git commit -m 'Various'; git push origin
@@ -125,4 +125,4 @@ if [[ "$1" == "" ]]; then
 else
   echo "$*: invalid option"
 fi
-echo "Try \"gi help\" for more information."
+echo "Try "gi help" for more information."

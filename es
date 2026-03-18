@@ -26,10 +26,10 @@ echo -e "\x1b[92m-------------\x1b[0m"
 echo -e "\x1b[92mElasticsearch\x1b[0m"
 echo -e "\x1b[92m-------------\x1b[0m"
 
-echo -e "\x1b[92mgen:2026-02-12 10:41\x1b[0m"
+echo -e "\x1b[92mgen:2026-03-18 15:00\x1b[0m"
 echo
 
-            while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/[92m/; s/\"//g")
+            while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/\x1b[92m/; s/\"//g")
    exit
 fi
 ES_AUTH=""
@@ -41,7 +41,7 @@ section="CLUSTER"
 
 if [[ "$1 $2" == "clear cache" || "$1" == "ecc" ]]; then
    [[ "$1" == "ecc" ]] && shift || shift 2
-   usage="\x1b[95mclear cache \x1b[96m(ecc)\x1b[97m \x1b[0m[<index_name>]\x1b[97m\x1b[0m"
+   usage="\x1b[95mclear cache \x1b[96m(ecc)\x1b[97m [index_name]\x1b[0m"
    check_params $# 0 "Usage: $usage"
    print_command " curl -s -X POST \"http://$ES_HOST:$ES_PORT/$1/_cache/clear\""
    curl -s -X POST "http://$ES_HOST:$ES_PORT/$1/_cache/clear"
@@ -96,7 +96,7 @@ fi
 
 if [[ "$1 $2" == "list aliases" || "$1" == "ela" ]]; then
    [[ "$1" == "ela" ]] && shift || shift 2
-   usage="\x1b[95mlist aliases \x1b[96m(ela)\x1b[97m \x1b[0m[<filter> <order_by_field_name>]\x1b[97m\x1b[0m"
+   usage="\x1b[95mlist aliases \x1b[96m(ela)\x1b[97m [filter] [order_by_field_name]\x1b[0m"
    check_params $# 0 "Usage: $usage"
    print_command " curl -s -X GET \"http://$ES_HOST:$ES_PORT/_cat/aliases/$1?v&s=$2\""
    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/aliases/$1?v&s=$2"
@@ -105,7 +105,7 @@ fi
 
 if [[ "$1 $2" == "list indices" || "$1" == "eli" ]]; then
    [[ "$1" == "eli" ]] && shift || shift 2
-   usage="\x1b[95mlist indices \x1b[96m(eli)\x1b[97m \x1b[0m[<index_name>]\x1b[97m\x1b[0m"
+   usage="\x1b[95mlist indices \x1b[96m(eli)\x1b[97m [index_name]\x1b[0m"
    check_params $# 0 "Usage: $usage"
    print_command " curl -s -X GET \"http://$ES_HOST:$ES_PORT/_cat/indices/$1?v&h=health,status,index,pri,rep,sc,docs.count,docs.deleted,store.size,pri.store.size&s=index\" | tee /tmp/es_idx_list; sed -i 's/^[^ ][^ ]*  *[^ ][^ ]*  *//; s/ .*//' /tmp/es_idx_list"
    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/indices/$1?v&h=health,status,index,pri,rep,sc,docs.count,docs.deleted,store.size,pri.store.size&s=index" | tee /tmp/es_idx_list; sed -i 's/^[^ ][^ ]*  *[^ ][^ ]*  *//; s/ .*//' /tmp/es_idx_list
@@ -114,7 +114,7 @@ fi
 
 if [[ "$1 $2" == "list open" || "$1" == "elo" ]]; then
    [[ "$1" == "elo" ]] && shift || shift 2
-   usage="\x1b[95mlist open \x1b[96m(elo)\x1b[97m \x1b[0m[<index_name>]\x1b[97m\x1b[0m"
+   usage="\x1b[95mlist open \x1b[96m(elo)\x1b[97m [index_name]\x1b[0m"
    check_params $# 0 "Usage: $usage"
    print_command " curl -s -X GET \"http://$ES_HOST:$ES_PORT/_cat/indices/$1?v&h=health,status,index,pri,rep,sc,docs.count,docs.deleted,store.size,pri.store.size&s=index\" | sed \"/ close  /d\""
    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/indices/$1?v&h=health,status,index,pri,rep,sc,docs.count,docs.deleted,store.size,pri.store.size&s=index" | sed "/ close  /d"
@@ -132,7 +132,7 @@ fi
 
 if [[ "$1 $2" == "list shards" || "$1" == "els" ]]; then
    [[ "$1" == "els" ]] && shift || shift 2
-   usage="\x1b[95mlist shards \x1b[96m(els)\x1b[97m \x1b[0m[<index_name> <order_by_field_name>]\x1b[97m\x1b[0m"
+   usage="\x1b[95mlist shards \x1b[96m(els)\x1b[97m [index_name] [order_by_field_name]\x1b[0m"
    check_params $# 0 "Usage: $usage"
    print_command " curl -s -X GET \"http://$ES_HOST:$ES_PORT/_cat/shards/$1?v&h=index,shard,prirep,sc,state,docs,store,node&s=index,shard,prirep&s=$2\""
    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/shards/$1?v&h=index,shard,prirep,sc,state,docs,store,node&s=index,shard,prirep&s=$2"
@@ -141,7 +141,7 @@ fi
 
 if [[ "$1 $2 $3" == "list shard details" || "$1" == "elsd" ]]; then
    [[ "$1" == "elsd" ]] && shift || shift 3
-   usage="\x1b[95mlist shard details \x1b[96m(elsd)\x1b[97m \x1b[0m[<index_name> <order_by_field_name>]\x1b[97m\x1b[0m"
+   usage="\x1b[95mlist shard details \x1b[96m(elsd)\x1b[97m [index_name] [order_by_field_name]\x1b[0m"
    check_params $# 0 "Usage: $usage"
    print_command " curl -s -X GET \"http://$ES_HOST:$ES_PORT/_cat/shards/$1?v&h=index,shard,prirep,state,docs,store,ip,segments.count,unassigned.reason,unassigned.for,node&s=$2\""
    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/shards/$1?v&h=index,shard,prirep,state,docs,store,ip,segments.count,unassigned.reason,unassigned.for,node&s=$2"
@@ -150,7 +150,7 @@ fi
 
 if [[ "$1 $2" == "list segments" || "$1" == "ele" ]]; then
    [[ "$1" == "ele" ]] && shift || shift 2
-   usage="\x1b[95mlist segments \x1b[96m(ele)\x1b[97m \x1b[0m[<index_name>]\x1b[97m\x1b[0m"
+   usage="\x1b[95mlist segments \x1b[96m(ele)\x1b[97m [index_name]\x1b[0m"
    check_params $# 0 "Usage: $usage"
    print_command " curl -s -X GET \"http://$ES_HOST:$ES_PORT/_cat/segments/$1?v&s=index,shard,prirep\""
    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/segments/$1?v&s=index,shard,prirep"
@@ -159,7 +159,7 @@ fi
 
 if [[ "$1 $2 $3" == "list segmented shards" || "$1" == "elss" ]]; then
    [[ "$1" == "elss" ]] && shift || shift 3
-   usage="\x1b[95mlist segmented shards \x1b[96m(elss)\x1b[97m \x1b[0m[<index_name>]\x1b[97m\x1b[0m"
+   usage="\x1b[95mlist segmented shards \x1b[96m(elss)\x1b[97m [index_name]\x1b[0m"
    check_params $# 0 "Usage: $usage"
    print_command " curl -s -X GET \"http://$ES_HOST:$ES_PORT/_cat/shards/$1?v&h=index,shard,prirep,state,docs,node,segments.count&s=index,shard,prirep,node\""
    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/shards/$1?v&h=index,shard,prirep,state,docs,node,segments.count&s=index,shard,prirep,node"
@@ -168,7 +168,7 @@ fi
 
 if [[ "$1 $2 $3 $4 $5" == "list avg segments per shard" || "$1" == "elass" ]]; then
    [[ "$1" == "elass" ]] && shift || shift 5
-   usage="\x1b[95mlist avg segments per shard \x1b[96m(elass)\x1b[97m \x1b[0m[<index_name>]\x1b[97m\x1b[0m"
+   usage="\x1b[95mlist avg segments per shard \x1b[96m(elass)\x1b[97m [index_name]\x1b[0m"
    check_params $# 0 "Usage: $usage"
    print_command " curl -s \"http://$ES_HOST:$ES_PORT/_cat/segments/$1?v&s=index,shard,prirep\" | tail -n +2 | sed 's/[[:space:]]\+/ /g' | cut -d ' ' -f1,2 | sort | uniq -c | awk '{c=$1; i=$2; sh=$3; se_c[i]+=c; sh_c[i]++} END {printf \"%-52s Avg Segments\n\",\"Index\"; for (i in se_c) {avg=se_c[i]/sh_c[i]; printf \"%-60s %.2f\n\", i, avg}}' | sort"
    curl -s "http://$ES_HOST:$ES_PORT/_cat/segments/$1?v&s=index,shard,prirep" | tail -n +2 | sed 's/[[:space:]]\+/ /g' | cut -d ' ' -f1,2 | sort | uniq -c | awk '{c=$1; i=$2; sh=$3; se_c[i]+=c; sh_c[i]++} END {printf "%-52s Avg Segments\n","Index"; for (i in se_c) {avg=se_c[i]/sh_c[i]; printf "%-60s %.2f\n", i, avg}}' | sort
@@ -377,7 +377,7 @@ fi
 
 if [[ "$1 $2" == "delete entry" || "$1" == "ede" ]]; then
    [[ "$1" == "ede" ]] && shift || shift 2
-   usage="\x1b[95mdelete entry \x1b[96m(ede)\x1b[97m <index_name> \x1b[0m[<_id>]\x1b[97m\x1b[92m # No <id> will mean all documents deleted !! cat /tmp/es_idx_list 2>&1\x1b[0m"
+   usage="\x1b[95mdelete entry \x1b[96m(ede)\x1b[97m <index_name> [_id]\x1b[92m # No <id> will mean all documents deleted !! cat /tmp/es_idx_list 2>&1\x1b[0m"
    check_params $# 1 "Usage: $usage"
    print_command " if [[ \"$2\" == \"\" ]]; then read -p \"This will delete ALL RECORDS - Are you sure [yN]? \" yn; if [[ ${yn^} == Y ]]; then curl -s -X POST \"http://localhost:9200/$1/_delete_by_query\" -H 'Content-Type: application/json' -d '{ \"query\": { \"match_all\": {} } }' | pj; fi; else curl -s -X POST \"http://localhost:9200/$1/_delete_by_query\" -H 'Content-Type: application/json' -d '{ \"query\": { \"ids\": { \"values\": [ \"'$2'\" ] } } }' | pj; fi"
    if [[ "$2" == "" ]]; then read -p "This will delete ALL RECORDS - Are you sure [yN]? " yn; if [[ ${yn^} == Y ]]; then curl -s -X POST "http://localhost:9200/$1/_delete_by_query" -H 'Content-Type: application/json' -d '{ "query": { "match_all": {} } }' | pj; fi; else curl -s -X POST "http://localhost:9200/$1/_delete_by_query" -H 'Content-Type: application/json' -d '{ "query": { "ids": { "values": [ "'$2'" ] } } }' | pj; fi
@@ -451,7 +451,7 @@ section="SEARCH"
 
 if [[ "$1" == "search" || "$1" == "es" ]]; then
    [[ "$1" == "es" ]] && shift || shift 1
-   usage="\x1b[95msearch \x1b[96m(es)\x1b[97m <index_name> \x1b[0m[<search_term>]\x1b[97m\x1b[0m"
+   usage="\x1b[95msearch \x1b[96m(es)\x1b[97m <index_name> [search_term]\x1b[0m"
    check_params $# 1 "Usage: $usage"
    print_command " if [[ \"$2\" == \"\" ]]; then term=\"*\"; else term=\"$2\"; fi; curl -s -X GET \"http://$ES_HOST:$ES_PORT/$1/_search?q=${term}&pretty\" | pj"
    if [[ "$2" == "" ]]; then term="*"; else term="$2"; fi; curl -s -X GET "http://$ES_HOST:$ES_PORT/$1/_search?q=${term}&pretty" | pj
@@ -507,7 +507,7 @@ section="TASKS"
 
 if [[ "$1 $2" == "list tasks" || "$1" == "elt" ]]; then
    [[ "$1" == "elt" ]] && shift || shift 2
-   usage="\x1b[95mlist tasks \x1b[96m(elt)\x1b[97m \x1b[0m[<sort_field>]\x1b[97m\x1b[0m"
+   usage="\x1b[95mlist tasks \x1b[96m(elt)\x1b[97m [sort_field]\x1b[0m"
    check_params $# 0 "Usage: $usage"
    print_command " curl -s -X GET \"http://$ES_HOST:$ES_PORT/_cat/tasks?v&h=action,type,start_time,timestamp,running_time,node&s=$1\""
    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/tasks?v&h=action,type,start_time,timestamp,running_time,node&s=$1"
@@ -516,7 +516,7 @@ fi
 
 if [[ "$1 $2 $3" == "list tasks detail" || "$1" == "eltd" ]]; then
    [[ "$1" == "eltd" ]] && shift || shift 3
-   usage="\x1b[95mlist tasks detail \x1b[96m(eltd)\x1b[97m \x1b[0m[<sort_field>]\x1b[97m\x1b[0m"
+   usage="\x1b[95mlist tasks detail \x1b[96m(eltd)\x1b[97m [sort_field]\x1b[0m"
    check_params $# 0 "Usage: $usage"
    print_command " curl -s -X GET \"http://$ES_HOST:$ES_PORT/_cat/tasks?v&s=$1\""
    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/tasks?v&s=$1"
@@ -620,4 +620,4 @@ if [[ "$1" == "" ]]; then
 else
   echo "$*: invalid option"
 fi
-echo "Try \"es help\" for more information."
+echo "Try "es help" for more information."
