@@ -16,12 +16,12 @@ _r_complete() {
     done
 
 }
-complete -F _r_complete r @rhe @rsm @rsm @rhm @rse @rsp @rcba
+complete -F _r_complete r @rhe @rsm @rrm @rhm @rse @rsp @rcba
 
 # Shortcut aliases
 alias @rhe='r rhe'
 alias @rsm='r rsm'
-alias @rsm='r rsm'
+alias @rrm='r rrm'
 alias @rhm='r rhm'
 alias @rse='r rse'
 alias @rsp='r rsp'

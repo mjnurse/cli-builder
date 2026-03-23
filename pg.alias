@@ -16,7 +16,7 @@ _pg_complete() {
     done
 
 }
-complete -F _pg_complete pg @phe @pc @pscd @pd @pld @pli @pls @plt @psd @psa
+complete -F _pg_complete pg @phe @pc @pscd @pd @pld @pli @pls @plt @psd @prs @psa @ptt
 
 # Shortcut aliases
 alias @phe='pg phe'
@@ -28,4 +28,6 @@ alias @pli='pg pli'
 alias @pls='pg pls'
 alias @plt='pg plt'
 alias @psd='pg psd'
+alias @prs='pg prs'
 alias @psa='pg psa'
+alias @ptt='pg ptt'

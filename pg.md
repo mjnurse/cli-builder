@@ -1,6 +1,6 @@
 # Postgres PSQL
 
-*Generated: 2026-03-18 15:00*
+*Generated: 2026-03-20 17:47*
 
 
 ## HELP
@@ -32,5 +32,9 @@
 
 ## QUERY
 
+**`run sql (prs) <db_name> <sql>`**
+
 **`select all (psa) <db_name> [schema_name] <table_name>`**
+
+**`truncate table (ptt) <db_name> [schema_name] <table_name>`**
 

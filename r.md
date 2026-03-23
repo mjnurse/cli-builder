@@ -1,6 +1,6 @@
 # R
 
-*Generated: 2026-03-18 15:00*
+*Generated: 2026-03-18 17:56*
 
 
 ## HELP
@@ -12,7 +12,7 @@
 
 **`start mdm (rsm) [streaming|ui|all|k(afka)>|kapp]`** - kapp starts kafka streaming for the application data source
 
-**`restart mdm (rsm) [streaming|ui|all|k(afka)>|kapp]`** - kapp starts kafka streaming for the application data source
+**`restart mdm (rrm) [streaming|ui|all|k(afka)>|kapp]`** - kapp starts kafka streaming for the application data source
 
 **`halt mdm (rhm)`**
 

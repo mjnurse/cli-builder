@@ -159,6 +159,16 @@ search dictionary (sd) <db_name> <search_term> :: \
 = QUERY
 # -------------------------------------------------------------------------------------------------
 
+run sql (rs) <db_name> <sql> :: \
+    psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c "$2"
+
 select all (sa) <db_name> [<schema_name>] <table_name> :: \
     if [[ "$3" == "" ]]; then tn="\"$2\""; sn=""; else tn="\"$3\""; sn="\"$2\"."; fi; \
     psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c 'SELECT * FROM '${sn}${tn}
+
+truncate table (tt) <db_name> [<schema_name>] <table_name> :: \
+    if [[ "$3" == "" ]]; then tn="\"$2\""; sn=""; else tn="\"$3\""; sn="\"$2\"."; fi; \
+    read -p "Are you sure [yN]? " yn; \
+    if [[ ${yn^} == Y ]]; then \
+        psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c 'TRUNCATE TABLE '${sn}${tn}; \
+    fi

@@ -26,7 +26,7 @@ echo -e "\x1b[92m-------------\x1b[0m"
 echo -e "\x1b[92mPostgres PSQL\x1b[0m"
 echo -e "\x1b[92m-------------\x1b[0m"
 
-echo -e "\x1b[92mgen:2026-03-18 15:00\x1b[0m"
+echo -e "\x1b[92mgen:2026-03-20 17:47\x1b[0m"
 echo
 
             while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/\x1b[92m/; s/\"//g")
@@ -121,12 +121,30 @@ if [[ "$1 $2" == "search dictionary" || "$1" == "psd" ]]; then
 fi
 section="QUERY"
 
+if [[ "$1 $2" == "run sql" || "$1" == "prs" ]]; then
+   [[ "$1" == "prs" ]] && shift || shift 2
+   usage="\x1b[95mrun sql \x1b[96m(prs)\x1b[97m <db_name> <sql>\x1b[0m"
+   check_params $# 2 "Usage: $usage"
+   print_command " psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c \"$2\""
+   psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c "$2"
+   exit
+fi
+
 if [[ "$1 $2" == "select all" || "$1" == "psa" ]]; then
    [[ "$1" == "psa" ]] && shift || shift 2
    usage="\x1b[95mselect all \x1b[96m(psa)\x1b[97m <db_name> [schema_name] <table_name>\x1b[0m"
    check_params $# 2 "Usage: $usage"
    print_command " if [[ \"$3\" == \"\" ]]; then tn=\"\\"$2\\"\"; sn=\"\"; else tn=\"\\"$3\\"\"; sn=\"\\"$2\\".\"; fi; psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c 'SELECT * FROM '${sn}${tn}"
    if [[ "$3" == "" ]]; then tn="\"$2\""; sn=""; else tn="\"$3\""; sn="\"$2\"."; fi; psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c 'SELECT * FROM '${sn}${tn}
+   exit
+fi
+
+if [[ "$1 $2" == "truncate table" || "$1" == "ptt" ]]; then
+   [[ "$1" == "ptt" ]] && shift || shift 2
+   usage="\x1b[95mtruncate table \x1b[96m(ptt)\x1b[97m <db_name> [schema_name] <table_name>\x1b[0m"
+   check_params $# 2 "Usage: $usage"
+   print_command " if [[ \"$3\" == \"\" ]]; then tn=\"\\"$2\\"\"; sn=\"\"; else tn=\"\\"$3\\"\"; sn=\"\\"$2\\".\"; fi; read -p \"Are you sure [yN]? \" yn; if [[ ${yn^} == Y ]]; then psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c 'TRUNCATE TABLE '${sn}${tn}; fi"
+   if [[ "$3" == "" ]]; then tn="\"$2\""; sn=""; else tn="\"$3\""; sn="\"$2\"."; fi; read -p "Are you sure [yN]? " yn; if [[ ${yn^} == Y ]]; then psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c 'TRUNCATE TABLE '${sn}${tn}; fi
    exit
 fi
 
