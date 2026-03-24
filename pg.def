@@ -1,4 +1,4 @@
-@ Postgres PSQL
+# Postgres PSQL
 
 cmd [ -f ./pg_conn_defaults ] && source ./pg_conn_defaults
 
@@ -112,6 +112,37 @@ cmd tq=" \
 
 list tables (lt) <db_name> [<schema_name>] :: \
     psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c "${tq//SCHEMANAME/$2}"
+
+cmd oq=" \
+    WITH objs AS ( \
+        SELECT \
+            n.nspname AS schema_name, \
+            c.relname AS object_name, \
+            CASE c.relkind \
+            WHEN 'r' THEN 'table' \
+            WHEN 'p' THEN 'partitioned table' \
+            WHEN 'v' THEN 'view' \
+            WHEN 'm' THEN 'materialized view' \
+            WHEN 'S' THEN 'sequence' \
+            WHEN 'f' THEN 'foreign table' \
+            WHEN 'i' THEN 'index' \
+            WHEN 'I' THEN 'partitioned index' \
+            ELSE c.relkind::text \
+            END AS object_type \
+        FROM pg_catalog.pg_class c \
+        JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace \
+        WHERE (LOWER(n.nspname) = LOWER('SCHEMANAME') OR 'SCHEMANAME' = '') ) \
+    SELECT \
+        schema_name, \
+        object_name, \
+        object_type \
+    FROM \
+        objs \
+    ORDER BY \
+        1, 2"
+
+list objects (lo) <db_name> [<schema_name>] :: \
+    psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c "${oq//SCHEMANAME/$2}"
 
 cmd sq=" \
     SELECT \

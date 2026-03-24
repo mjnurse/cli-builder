@@ -1,4 +1,4 @@
-@ Elasticsearch
+# Elasticsearch
 
 cmd ES_AUTH=""
 cmd ES_HOST="${ES_HOST:-localhost}"

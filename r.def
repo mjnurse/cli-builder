@@ -1,12 +1,14 @@
+# Run
+
 # ------------------------------------------------------------------------------------------------------------
 = MDM
 # ------------------------------------------------------------------------------------------------------------
 
-start mdm (sm) [<streaming|ui|all|k(afka)>|kapp>] :: \
+start mdm (sm) [<streaming|ui|all|k(afka)>|kapp>|shaper] :: \
     mjn-start-mdm $1 \
     ## kapp starts kafka streaming for the application data source
 
-restart mdm (rm) [<streaming|ui|all|k(afka)>|kapp>] :: \
+restart mdm (rm) [<streaming|ui|all|k(afka)>|kapp|shaper>] :: \
     mjn-stop-mdm; \
     mjn-start-mdm $1 \
     ## kapp starts kafka streaming for the application data source

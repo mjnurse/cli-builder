@@ -26,7 +26,7 @@ echo -e "\x1b[92m-------------\x1b[0m"
 echo -e "\x1b[92mPostgres PSQL\x1b[0m"
 echo -e "\x1b[92m-------------\x1b[0m"
 
-echo -e "\x1b[92mgen:2026-03-20 17:47\x1b[0m"
+echo -e "\x1b[92mgen:2026-03-23 18:10\x1b[0m"
 echo
 
             while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/\x1b[92m/; s/\"//g")
@@ -107,6 +107,16 @@ if [[ "$1 $2" == "list tables" || "$1" == "plt" ]]; then
    check_params $# 1 "Usage: $usage"
    print_command " psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c \"${tq//SCHEMANAME/$2}\""
    psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c "${tq//SCHEMANAME/$2}"
+   exit
+fi
+oq=" WITH objs AS ( SELECT n.nspname AS schema_name, c.relname AS object_name, CASE c.relkind WHEN 'r' THEN 'table' WHEN 'p' THEN 'partitioned table' WHEN 'v' THEN 'view' WHEN 'm' THEN 'materialized view' WHEN 'S' THEN 'sequence' WHEN 'f' THEN 'foreign table' WHEN 'i' THEN 'index' WHEN 'I' THEN 'partitioned index' ELSE c.relkind::text END AS object_type FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE (LOWER(n.nspname) = LOWER('SCHEMANAME') OR 'SCHEMANAME' = '') ) SELECT schema_name, object_name, object_type FROM objs ORDER BY 1, 2"
+
+if [[ "$1 $2" == "list objects" || "$1" == "plo" ]]; then
+   [[ "$1" == "plo" ]] && shift || shift 2
+   usage="\x1b[95mlist objects \x1b[96m(plo)\x1b[97m <db_name> [schema_name]\x1b[0m"
+   check_params $# 1 "Usage: $usage"
+   print_command " psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c \"${oq//SCHEMANAME/$2}\""
+   psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c "${oq//SCHEMANAME/$2}"
    exit
 fi
 sq=" SELECT CASE c.relkind WHEN 'r' THEN 'table' WHEN 'S' THEN 'sequence' WHEN 'i' THEN 'index' WHEN 'v' THEN 'view' WHEN 'm' THEN 'materialised view' ELSE c.relkind::TEXT END AS object_type, n.nspname AS schema, c.relname AS name FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE (    c.relname ILIKE 'SEARCHTERM' OR n.nspname ILIKE 'SEARCHTERM' ) AND n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast') UNION ALL SELECT 'constraint' AS object_type, n.nspname AS schema, con.conname AS name FROM pg_constraint con JOIN pg_namespace n ON n.oid = con.connamespace WHERE (    con.conname ILIKE 'SEARCHTERM' OR n.nspname ILIKE 'SEARCHTERM' ) AND n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast') ORDER BY object_type, schema, name"

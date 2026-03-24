@@ -1,6 +1,6 @@
 # Postgres PSQL
 
-*Generated: 2026-03-20 17:47*
+*Generated: 2026-03-23 18:10*
 
 
 ## HELP
@@ -26,6 +26,8 @@
 **`list schema (pls) [db_name]`**
 
 **`list tables (plt) <db_name> [schema_name]`**
+
+**`list objects (plo) <db_name> [schema_name]`**
 
 **`search dictionary (psd) <db_name> <search_term>`** - % matches multiple chars (inc. none), _ matches a single char
 
