@@ -22,7 +22,7 @@ if [[ "$1" == "help" || "$1" == "dhe" ]]; then
    usage="\x1b[95mhelp \x1b[96m(dhe)\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
    
-echo -e "\x1b[92mgen:2026-03-18 15:00\x1b[0m"
+echo -e "\x1b[92mgen:2026-03-31 12:38\x1b[0m"
 echo
 
             while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/\x1b[92m/; s/\"//g")
@@ -54,6 +54,15 @@ if [[ "$1" == "logs" || "$1" == "dlo" ]]; then
    check_params $# 1 "Usage: $usage"
    print_command " if [[ $1 == -f ]]; then docker logs -f $2; else docker logs $1; fi"
    if [[ $1 == -f ]]; then docker logs -f $2; else docker logs $1; fi
+   exit
+fi
+
+if [[ "$1" == "errs" || "$1" == "der" ]]; then
+   [[ "$1" == "der" ]] && shift || shift 1
+   usage="\x1b[95merrs \x1b[96m(der)\x1b[97m [-f]\x1b[0m"
+   check_params $# 0 "Usage: $usage"
+   print_command " echo \"\" > /tmp/docker_err_p; while [[ true ]]; do for c in $(docker ps --format '{{.Names}}'); do docker logs $c 2>&1 | grep \"ERROR:\" | sed \"s/^/$c: /\"; done > /tmp/docker_err_c; grep -Fxvf /tmp/docker_err_p /tmp/docker_err_c; mv -f /tmp/docker_err_c /tmp/docker_err_p; if [[ $1 != -f ]]; then break; fi; sleep 2; done"
+   echo "" > /tmp/docker_err_p; while [[ true ]]; do for c in $(docker ps --format '{{.Names}}'); do docker logs $c 2>&1 | grep "ERROR:" | sed "s/^/$c: /"; done > /tmp/docker_err_c; grep -Fxvf /tmp/docker_err_p /tmp/docker_err_c; mv -f /tmp/docker_err_c /tmp/docker_err_p; if [[ $1 != -f ]]; then break; fi; sleep 2; done
    exit
 fi
 

@@ -40,13 +40,14 @@ _dc_complete() {
             COMPREPLY=( $(compgen -W "$(docker network ls --format '{{.Name}}')" -- "$cur") )
         fi
 }
-complete -F _dc_complete dc @dhe @drm @dps @dlo @dpu @dmv @dre @dru @dsh @dst @ds @dso @dcb @dcdo @dcls @dcre @dct @dcup @dcbup @dln @dpn @drn @dspa @dvls
+complete -F _dc_complete dc @dhe @drm @dps @dlo @der @dpu @dmv @dre @dru @dsh @dst @ds @dso @dcb @dcdo @dcls @dcre @dct @dcup @dcbup @dln @dpn @drn @dspa @dvls
 
 # Shortcut aliases
 alias @dhe='dc dhe'
 alias @drm='dc drm'
 alias @dps='dc dps'
 alias @dlo='dc dlo'
+alias @der='dc der'
 alias @dpu='dc dpu'
 alias @dmv='dc dmv'
 alias @dre='dc dre'

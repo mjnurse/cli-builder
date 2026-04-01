@@ -26,6 +26,18 @@ logs (lo) [<-f>] <container-name> :: \
     !! docker ps --all --format '{{.Names}}' \
     ## -f: follow log
 
+errs (er) [<-f>] :: \
+    echo "" > /tmp/docker_err_p; \
+    while [[ true ]]; do \
+        for c in $(docker ps --format '{{.Names}}'); do \
+            docker logs $c 2>&1 | grep "ERROR:" | sed "s/^/$c: /"; \
+        done > /tmp/docker_err_c; \
+        grep -Fxvf /tmp/docker_err_p /tmp/docker_err_c; \
+        mv -f /tmp/docker_err_c /tmp/docker_err_p; \
+        if [[ $1 != -f ]]; then break; fi; \
+        sleep 2; \
+    done
+
 pull container (pu) <container_name> :: \
     docker pull $1
 

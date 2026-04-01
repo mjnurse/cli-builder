@@ -1,6 +1,6 @@
 # DC
 
-*Generated: 2026-03-18 15:00*
+*Generated: 2026-03-31 12:38*
 
 
 ## HELP
@@ -15,6 +15,8 @@
 **`list containers (dps) [-d]`** - -d: show details
 
 **`logs (dlo) [-f] <container-name>`** - -f: follow log
+
+**`errs (der) [-f]`**
 
 **`pull container (dpu) <container_name>`**
 
