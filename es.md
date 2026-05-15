@@ -1,6 +1,6 @@
-# Elasticsearch
+# ES
 
-*Generated: 2026-03-18 15:00*
+*Generated: 2026-05-14 16:27*
 
 
 ## HELP

@@ -24,11 +24,21 @@ add commit push (acp) [<-f|--force>] [<message>] :: \
     git commit -m 'Various'; \
     git push origin
 
-list branches local (lbl) :: \
-    git branch
+list branches local (lbl) [-d] :: \
+    if [[ $1 == -d ]]; then \
+        git branch --format='%(creatordate:short), %(refname:short)' | column -s, -t | sort; \
+    else \
+        git branch --format='%(creatordate:short), %(refname:short)' | column -s, -t; \
+    fi \
+    ## -d - order by commit data
 
-list branches remote (lbr) :: \
-    git branch -r
+list branches remote (lbr) [-d] :: \
+    if [[ $1 == -d ]]; then \
+        git branch -r --format='%(creatordate:short), %(refname:short)' | column -s, -t | sort; \
+    else \
+        git branch -r --format='%(creatordate:short), %(refname:short)' | column -s, -t; \
+    fi \
+    ## -d - order by commit data
 
 clone (c) <url> :: \
     git clone $1
@@ -52,6 +62,34 @@ pull (pu) :: \
 
 push origin (po) :: \
     git push origin
+
+cmd gitsearch() { \
+    show_branch_yn=n; \
+    if [[ $1 == -b ]]; then \
+        show_branch_yn=y; \
+    fi; \
+    rm -f /tmp/gi-cli.tmp*; \
+    grep_args=""; \
+    [ -n "$1" ] && grep_args="$grep_args --grep=$1"; \
+    [ -n "$2" ] &&  grep_args="$grep_args --grep=$2"; \
+    [ -n "$3" ] && grep_args="$grep_args --grep=$3"; \
+    git log --all --oneline --all-match $grep_args > /tmp/gi-cli.tmp2; \
+    if [[ $show_branch_yn == n ]]; then \
+        cat /tmp/gi-cli.tmp2; \
+    else \
+        echo "$(wc -l < /tmp/gi-cli.tmp2) hits -  fetching branch details"; \
+        while read hash msg; do \
+            branches=$(git branch --all --contains "$hash" | head -1 | sed 's/^ *//'); \
+            echo  "$branches || $msg" >> /tmp/gi-cli.tmp; \
+            printf "."; \
+        done < /tmp/gi-cli.tmp2; \
+        echo; column -s "||" -t < /tmp/gi-cli.tmp; \
+    fi; \
+    rm -f  /tmp/gi-cli.tmp*; }
+
+search commit messages (scm) [<-b>] <word> [<word>] [<word>] :: \
+    gitsearch $1 $2 $3 \
+    ## (-b show branch name)
 
 status (s) :: git status
 

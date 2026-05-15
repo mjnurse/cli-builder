@@ -16,7 +16,7 @@ _gi_complete() {
     done
 
 }
-complete -F _gi_complete gi @ghe @gacp @glbl @glbr @gc @gf @gh @gpu @gpo @gs @gsb
+complete -F _gi_complete gi @ghe @gacp @glbl @glbr @gc @gf @gh @gpu @gpo @gscm @gs @gsb
 
 # Shortcut aliases
 alias @ghe='gi ghe'
@@ -28,5 +28,6 @@ alias @gf='gi gf'
 alias @gh='gi gh'
 alias @gpu='gi gpu'
 alias @gpo='gi gpo'
+alias @gscm='gi gscm'
 alias @gs='gi gs'
 alias @gsb='gi gsb'

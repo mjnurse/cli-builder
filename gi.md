@@ -1,6 +1,6 @@
 # GI
 
-*Generated: 2026-03-18 15:00*
+*Generated: 2026-05-14 17:02*
 
 
 ## HELP
@@ -12,9 +12,9 @@
 
 **`add commit push (gacp) [-f|--force] [message]`**
 
-**`list branches local (glbl)`**
+**`list branches local (glbl) [-d]`** - -d - order by commit data
 
-**`list branches remote (glbr)`**
+**`list branches remote (glbr) [-d]`** - -d - order by commit data
 
 **`clone (gc) <url>`**
 
@@ -25,6 +25,8 @@
 **`pull (gpu)`**
 
 **`push origin (gpo)`**
+
+**`search commit messages (gscm) [-b] <word> [word] [word]`** - (-b show branch name)
 
 **`status (gs)`**
 

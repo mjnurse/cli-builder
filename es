@@ -22,11 +22,7 @@ if [[ "$1" == "help" || "$1" == "ehe" ]]; then
    usage="\x1b[95mhelp \x1b[96m(ehe)\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
    
-echo -e "\x1b[92m-------------\x1b[0m"
-echo -e "\x1b[92mElasticsearch\x1b[0m"
-echo -e "\x1b[92m-------------\x1b[0m"
-
-echo -e "\x1b[92mgen:2026-03-18 15:00\x1b[0m"
+echo -e "\x1b[92mgen:2026-05-14 16:27\x1b[0m"
 echo
 
             while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/\x1b[92m/; s/\"//g")
