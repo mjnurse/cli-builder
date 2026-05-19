@@ -71,7 +71,7 @@ cmd gitsearch() { \
     rm -f /tmp/gi-cli.tmp*; \
     grep_args=""; \
     [ -n "$1" ] && grep_args="$grep_args --grep=$1"; \
-    [ -n "$2" ] &&  grep_args="$grep_args --grep=$2"; \
+    [ -n "$2" ] && grep_args="$grep_args --grep=$2"; \
     [ -n "$3" ] && grep_args="$grep_args --grep=$3"; \
     git log --all --oneline --all-match $grep_args > /tmp/gi-cli.tmp2; \
     if [[ $show_branch_yn == n ]]; then \
