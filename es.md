@@ -1,6 +1,6 @@
 # ES
 
-*Generated: 2026-05-14 16:27*
+*Generated: 2026-05-28 16:43*
 
 
 ## HELP
@@ -93,7 +93,7 @@
 
 **`add entry (eae) <index_name> <entry_json>`**
 
-**`delete entry (ede) <index_name> [_id]`** - No <id> will mean all documents deleted !! cat /tmp/es_idx_list 2>&1
+**`delete entry (ede) <index_name> [_id]`** - No <id> will mean all documents deleted
 
 
 ## NODES
@@ -128,7 +128,7 @@
 
 ## SQL
 
-**`sql (esql) <sql>`**
+**`sql (esql) <sql>`** - Tips: tablenames in \x22\x22, can use: DESCRIBE \x22<table>\x22
 
 
 ## TASKS

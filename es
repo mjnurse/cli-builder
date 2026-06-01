@@ -22,7 +22,7 @@ if [[ "$1" == "help" || "$1" == "ehe" ]]; then
    usage="\x1b[95mhelp \x1b[96m(ehe)\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
    
-echo -e "\x1b[92mgen:2026-05-14 16:27\x1b[0m"
+echo -e "\x1b[92mgen:2026-05-28 16:43\x1b[0m"
 echo
 
             while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/\x1b[92m/; s/\"//g")
@@ -373,7 +373,7 @@ fi
 
 if [[ "$1 $2" == "delete entry" || "$1" == "ede" ]]; then
    [[ "$1" == "ede" ]] && shift || shift 2
-   usage="\x1b[95mdelete entry \x1b[96m(ede)\x1b[97m <index_name> [_id]\x1b[92m # No <id> will mean all documents deleted !! cat /tmp/es_idx_list 2>&1\x1b[0m"
+   usage="\x1b[95mdelete entry \x1b[96m(ede)\x1b[97m <index_name> [_id]\x1b[92m # No <id> will mean all documents deleted\x1b[0m"
    check_params $# 1 "Usage: $usage"
    print_command " if [[ \"$2\" == \"\" ]]; then read -p \"This will delete ALL RECORDS - Are you sure [yN]? \" yn; if [[ ${yn^} == Y ]]; then curl -s -X POST \"http://localhost:9200/$1/_delete_by_query\" -H 'Content-Type: application/json' -d '{ \"query\": { \"match_all\": {} } }' | pj; fi; else curl -s -X POST \"http://localhost:9200/$1/_delete_by_query\" -H 'Content-Type: application/json' -d '{ \"query\": { \"ids\": { \"values\": [ \"'$2'\" ] } } }' | pj; fi"
    if [[ "$2" == "" ]]; then read -p "This will delete ALL RECORDS - Are you sure [yN]? " yn; if [[ ${yn^} == Y ]]; then curl -s -X POST "http://localhost:9200/$1/_delete_by_query" -H 'Content-Type: application/json' -d '{ "query": { "match_all": {} } }' | pj; fi; else curl -s -X POST "http://localhost:9200/$1/_delete_by_query" -H 'Content-Type: application/json' -d '{ "query": { "ids": { "values": [ "'$2'" ] } } }' | pj; fi
@@ -493,10 +493,10 @@ section="SQL"
 
 if [[ "$1" == "sql" || "$1" == "esql" ]]; then
    [[ "$1" == "esql" ]] && shift || shift 1
-   usage="\x1b[95msql \x1b[96m(esql)\x1b[97m <sql>\x1b[0m"
+   usage="\x1b[95msql \x1b[96m(esql)\x1b[97m <sql>\x1b[92m # Tips: tablenames in \x22\x22, can use: DESCRIBE \x22<table>\x22\x1b[0m"
    check_params $# 1 "Usage: $usage"
-   print_command " echo '{\"query\": \"'\"${1//\\"/\\\\"}\"'\"}'; curl -s -X POST \"http://$ES_HOST:$ES_PORT/_sql?format=json\" -H 'Content-Type: application/json' -d '{\"query\": \"'\"${1//\\"/\\\\"}\"'\"}' | jq"
-   echo '{"query": "'"${1//\"/\\\"}"'"}'; curl -s -X POST "http://$ES_HOST:$ES_PORT/_sql?format=json" -H 'Content-Type: application/json' -d '{"query": "'"${1//\"/\\\"}"'"}' | jq
+   print_command " q=\"${1//\\"/\\\\"}\"; q=\"${q//\`/\'}\"; echo '{\"query\": \"'\"$q\"'\"}'; curl -s -X POST \"http://$ES_HOST:$ES_PORT/_sql?format=txt\" -H 'Content-Type: application/json' -d '{\"query\": \"'\"$q\"'\"}'"
+   q="${1//\"/\\\"}"; q="${q//\`/\'}"; echo '{"query": "'"$q"'"}'; curl -s -X POST "http://$ES_HOST:$ES_PORT/_sql?format=txt" -H 'Content-Type: application/json' -d '{"query": "'"$q"'"}'
    exit
 fi
 section="TASKS"

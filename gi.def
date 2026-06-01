@@ -43,6 +43,14 @@ list branches remote (lbr) [-d] :: \
 clone (c) <url> :: \
     git clone $1
 
+create archive (ca) <name> :: \
+    git archive --format-zip HEAD -o $1.zip \
+    ## Create <name>.zip - contains the contents of the current checked out repo (no .git)
+
+create bundle (cb) <name> :: \
+    git bundle create $1.bundle --all \
+    ## Creates <name>.bundle - contains the repo with history
+
 fetch (f) :: git fetch
 
 history (h) :: \

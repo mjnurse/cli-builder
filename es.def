@@ -192,8 +192,8 @@ delete entry (de) <index_name> [<_id>] :: \
         curl -s -X POST "http://localhost:9200/$1/_delete_by_query" -H 'Content-Type: application/json' \
              -d '{ "query": { "ids": { "values": [ "'$2'" ] } } }' | pj; \
     fi \
-    ## No <id> will mean all documents deleted \
-    !! cat /tmp/es_idx_list 2>&1
+    !! cat /tmp/es_idx_list 2>&1 \
+    ## No <id> will mean all documents deleted
 
 
 
@@ -252,8 +252,13 @@ search summary (ss) <index_name> <search_term> :: \
 # ----------------------------------------------------------------------------------------------------------------------------------
 
 sql (sql) <sql> :: \
-    echo '{"query": "'"${1//\"/\\\"}"'"}'; \
-    curl -s -X POST "http://$ES_HOST:$ES_PORT/_sql?format=json" -H 'Content-Type: application/json' -d '{"query": "'"${1//\"/\\\"}"'"}' | jq
+    q="${1//\"/\\\"}"; \
+    q="${q//\`/\'}"; \
+    echo '{"query": "'"$q"'"}'; \
+    curl -s -X POST "http://$ES_HOST:$ES_PORT/_sql?format=txt" \
+         -H 'Content-Type: application/json' \
+         -d '{"query": "'"$q"'"}' \
+    ## Tips: tablenames in \x22\x22, can use: DESCRIBE \x22<table>\x22
 
 
 # ----------------------------------------------------------------------------------------------------------------------------------

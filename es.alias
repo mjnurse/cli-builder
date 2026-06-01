@@ -100,7 +100,7 @@ _es_complete() {
             COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
         fi
         if [[ "$all" == "delete entry" || "$prev" == "ede" || "$prev" == "@ede" ]]; then
-            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1 )" -- "$cur") )
         fi
         if [[ "$all" == "search" || "$prev" == "es" || "$prev" == "@es" ]]; then
             COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )

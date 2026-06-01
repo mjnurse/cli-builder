@@ -22,7 +22,7 @@ if [[ "$1" == "help" || "$1" == "ghe" ]]; then
    usage="\x1b[95mhelp \x1b[96m(ghe)\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
    
-echo -e "\x1b[92mgen:2026-05-14 17:02\x1b[0m"
+echo -e "\x1b[92mgen:2026-05-26 12:29\x1b[0m"
 echo
 
             while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/\x1b[92m/; s/\"//g")
@@ -66,6 +66,24 @@ if [[ "$1" == "clone" || "$1" == "gc" ]]; then
    exit
 fi
 
+if [[ "$1 $2" == "create archive" || "$1" == "gca" ]]; then
+   [[ "$1" == "gca" ]] && shift || shift 2
+   usage="\x1b[95mcreate archive \x1b[96m(gca)\x1b[97m <name>\x1b[92m # Create <name>.zip - contains the contents of the current checked out repo (no .git)\x1b[0m"
+   check_params $# 1 "Usage: $usage"
+   print_command " git archive --format-zip HEAD -o $1.zip"
+   git archive --format-zip HEAD -o $1.zip
+   exit
+fi
+
+if [[ "$1 $2" == "create bundle" || "$1" == "gcb" ]]; then
+   [[ "$1" == "gcb" ]] && shift || shift 2
+   usage="\x1b[95mcreate bundle \x1b[96m(gcb)\x1b[97m <name>\x1b[92m # Creates <name>.bundle - contains the repo with history\x1b[0m"
+   check_params $# 1 "Usage: $usage"
+   print_command " git bundle create $1.bundle --all"
+   git bundle create $1.bundle --all
+   exit
+fi
+
 if [[ "$1" == "fetch" || "$1" == "gf" ]]; then
    [[ "$1" == "gf" ]] && shift || shift 1
    usage="\x1b[95mfetch \x1b[96m(gf)\x1b[97m\x1b[0m"
@@ -101,7 +119,7 @@ if [[ "$1 $2" == "push origin" || "$1" == "gpo" ]]; then
    git push origin
    exit
 fi
-gitsearch() { show_branch_yn=n; if [[ $1 == -b ]]; then show_branch_yn=y; fi; rm -f /tmp/gi-cli.tmp*; grep_args=""; [ -n "$1" ] && grep_args="$grep_args --grep=$1"; [ -n "$2" ] &&  grep_args="$grep_args --grep=$2"; [ -n "$3" ] && grep_args="$grep_args --grep=$3"; git log --all --oneline --all-match $grep_args > /tmp/gi-cli.tmp2; if [[ $show_branch_yn == n ]]; then cat /tmp/gi-cli.tmp2; else echo "$(wc -l < /tmp/gi-cli.tmp2) hits -  fetching branch details"; while read hash msg; do branches=$(git branch --all --contains "$hash" | head -1 | sed 's/^ *//'); echo  "$branches || $msg" >> /tmp/gi-cli.tmp; printf "."; done < /tmp/gi-cli.tmp2; echo; column -s "||" -t < /tmp/gi-cli.tmp; fi; rm -f  /tmp/gi-cli.tmp*; }
+gitsearch() { show_branch_yn=n; if [[ $1 == -b ]]; then show_branch_yn=y; fi; rm -f /tmp/gi-cli.tmp*; grep_args=""; [ -n "$1" ] && grep_args="$grep_args --grep=$1"; [ -n "$2" ] && grep_args="$grep_args --grep=$2"; [ -n "$3" ] && grep_args="$grep_args --grep=$3"; git log --all --oneline --all-match $grep_args > /tmp/gi-cli.tmp2; if [[ $show_branch_yn == n ]]; then cat /tmp/gi-cli.tmp2; else echo "$(wc -l < /tmp/gi-cli.tmp2) hits -  fetching branch details"; while read hash msg; do branches=$(git branch --all --contains "$hash" | head -1 | sed 's/^ *//'); echo  "$branches || $msg" >> /tmp/gi-cli.tmp; printf "."; done < /tmp/gi-cli.tmp2; echo; column -s "||" -t < /tmp/gi-cli.tmp; fi; rm -f  /tmp/gi-cli.tmp*; }
 
 if [[ "$1 $2 $3" == "search commit messages" || "$1" == "gscm" ]]; then
    [[ "$1" == "gscm" ]] && shift || shift 3

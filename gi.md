@@ -1,6 +1,6 @@
 # GI
 
-*Generated: 2026-05-14 17:02*
+*Generated: 2026-05-26 12:29*
 
 
 ## HELP
@@ -17,6 +17,10 @@
 **`list branches remote (glbr) [-d]`** - -d - order by commit data
 
 **`clone (gc) <url>`**
+
+**`create archive (gca) <name>`** - Create <name>.zip - contains the contents of the current checked out repo (no .git)
+
+**`create bundle (gcb) <name>`** - Creates <name>.bundle - contains the repo with history
 
 **`fetch (gf)`**
 
