@@ -1,11 +1,16 @@
 # DC
 
-*Generated: 2026-05-14 16:27*
+*Generated: 2026-06-05 11:54*
 
 
 ## HELP
 
 **`help (dhe)`**
+
+
+## IMAGES
+
+**`list images (dli) [name]`** - Use % or * as wildcards
 
 
 ## CONTAINERS

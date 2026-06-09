@@ -22,10 +22,20 @@ if [[ "$1" == "help" || "$1" == "dhe" ]]; then
    usage="\x1b[95mhelp \x1b[96m(dhe)\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
    
-echo -e "\x1b[92mgen:2026-05-14 16:27\x1b[0m"
+echo -e "\x1b[92mgen:2026-06-05 11:54\x1b[0m"
 echo
 
             while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/\x1b[92m/; s/\"//g")
+   exit
+fi
+section="IMAGES"
+
+if [[ "$1 $2" == "list images" || "$1" == "dli" ]]; then
+   [[ "$1" == "dli" ]] && shift || shift 2
+   usage="\x1b[95mlist images \x1b[96m(dli)\x1b[97m [name]\x1b[92m # Use % or * as wildcards\x1b[0m"
+   check_params $# 0 "Usage: $usage"
+   print_command " if [[ \"$1\" == \"\" ]]; then docker images; else filter=\"${1//\*/.\*}\"; filter=\"${filter//%/.\*}\"; docker images 2>/dev/null | egrep \"^$filter .*|IMAGE\"; fi"
+   if [[ "$1" == "" ]]; then docker images; else filter="${1//\*/.\*}"; filter="${filter//%/.\*}"; docker images 2>/dev/null | egrep "^$filter .*|IMAGE"; fi
    exit
 fi
 section="CONTAINERS"
