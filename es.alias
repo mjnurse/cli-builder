@@ -118,10 +118,11 @@ _es_complete() {
             COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
         fi
 }
-complete -F _es_complete es @ehe @ecc @eco @ech @ecs @ecrs @ec @ela @eli @elo @eldi @els @elsd @ele @elss @elass @elf @egim @elus @efmp @eaita @erifa @eci @ecifm @eclni @edi @eopi @ecli @eero @eerw @eri @ems @eanr @edsa @ersa @efm @er @eae @ede @eln @elna @elnq @esn @eat @etps @enpo @es @esj @esm @est @ess @esql @elt @eltd @eare @edre @elre @ecsn @edsn @elsn @esnd @ersn @eg @eqes
+complete -F _es_complete es @ehe @ess @ecc @eco @ech @ecs @ecrs @ec @ela @eli @elo @eldi @els @elsd @ele @elss @elass @elf @egim @elus @efmp @eaita @erifa @eci @ecifm @eclni @edi @eopi @ecli @eero @eerw @eri @ems @eanr @edsa @ersa @efm @er @eae @ede @eln @elna @elnq @esn @eat @etps @enpo @es @esj @esm @est @ess @esql @elt @eltd @eare @edre @elre @ecsn @edsn @elsn @esnd @ersn @eg @eqes
 
 # Shortcut aliases
 alias @ehe='es ehe'
+alias @ess='es ess'
 alias @ecc='es ecc'
 alias @eco='es eco'
 alias @ech='es ech'

@@ -1,38 +1,38 @@
-# GI
+# GIT
 
-*Generated: 2026-05-26 12:29*
+*Generated: 2026-06-11 13:33*
 
 
 ## HELP
 
-**`help (ghe)`**
+**`help (gihe)`**
 
 
 ## GENERAL
 
-**`add commit push (gacp) [-f|--force] [message]`**
+**`add commit push (giacp) [-f|--force] [message]`**
 
-**`list branches local (glbl) [-d]`** - -d - order by commit data
+**`list branches local (gilbl) [-d]`** - -d - order by commit data
 
-**`list branches remote (glbr) [-d]`** - -d - order by commit data
+**`list branches remote (gilbr) [-d]`** - -d - order by commit data
 
-**`clone (gc) <url>`**
+**`clone (gic) <url>`**
 
-**`create archive (gca) <name>`** - Create <name>.zip - contains the contents of the current checked out repo (no .git)
+**`create archive (gica) <name>`** - Create <name>.zip - contains the contents of the current checked out repo (no .git)
 
-**`create bundle (gcb) <name>`** - Creates <name>.bundle - contains the repo with history
+**`create bundle (gicb) <name>`** - Creates <name>.bundle - contains the repo with history
 
-**`fetch (gf)`**
+**`fetch (gif)`**
 
-**`history (gh)`**
+**`history (gih)`**
 
-**`pull (gpu)`**
+**`pull (gipu)`**
 
-**`push origin (gpo)`**
+**`push origin (gipo)`**
 
-**`search commit messages (gscm) [-b] <word> [word] [word]`** - (-b show branch name)
+**`search commit messages (giscm) [-b] <word> [word] [word]`** - (-b show branch name)
 
-**`status (gs)`**
+**`status (gis)`**
 
-**`switch branch (gsb) <branch-name>`** - (git checkout)
+**`switch branch (gisb) <branch-name>`** - (git checkout)
 

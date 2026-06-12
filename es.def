@@ -1,85 +1,126 @@
-# Elasticsearch
+@ Elasticsearch 
 
-cmd ES_AUTH=""
 cmd ES_HOST="${ES_HOST:-localhost}"
 cmd ES_PORT="${ES_PORT:-9200}"
+cmd if [[ "${ES_PATH%/}" != "" ]]; then ES_PATH="/${ES_PATH%/}"; fi
+cmd ES_PROTOCOL="${ES_PROTOCOL:-http}"
+
+@@ CLI uses environment variables: 
+@@ - ES_PROTOCOL (default: http), 
+@@ - ES_HOST (default: localhost)
+@@ - ES_PORT (default: 9200), 
+@@ - ES_PATH (default: <blank>), and 
+@@ - ES_AUTH (default: <blank> - no auth required)
+@@ Use command show settings (ss) to see environment variable values.
 
 cmd pj() { if command -v jq >/dev/null 2>&1; then jq .; else cat; fi; }
 
 cmd cols() { python3 -c 'import sys,json;f=lambda d,p="":[f(v["properties"],p+k+".") if isinstance(v,dict) and "properties" in v else print(p+k) for k,v in d.items()];[f(i["mappings"]["properties"]) for i in json.load(sys.stdin).values()]'; }
+
+cmd q() { \
+    local method="$1"; \
+    shift; \
+    if [[ "$ES_AUTH" != "" ]]; then \
+        ES_AUTH="-u $ES_AUTH"; \
+    fi; \
+    curl -s -X $method $ES_AUTH $ES_PROTOCOL://$ES_HOST:$ES_PORT$ES_PATH/$@; \
+}
+
+# ----------------------------------------------------------------------------------------------------------------------------------
+= HELP
+# ----------------------------------------------------------------------------------------------------------------------------------
+
+show settings (ss) :: \
+    echo Environment Variables:; \
+    echo ----------------------; \
+    echo "ES_PROTOCOL: $ES_PROTOCOL"; \
+    echo "ES_HOST:     $ES_HOST"; \
+    echo "ES_PORT:     $ES_PORT"; \
+    echo "ES_PATH:     $ES_PATH"; \
+    if [[ "$ES_AUTH" == "" ]]; then \
+        echo "ES_AUTH:     not set"; \
+    else \
+        echo "ES_AUTH:     is set"; \
+    fi
+
 
 # ----------------------------------------------------------------------------------------------------------------------------------
 = CLUSTER
 # ----------------------------------------------------------------------------------------------------------------------------------
 
 clear cache (cc) [<index_name>] :: \
-    curl -s -X POST "http://$ES_HOST:$ES_PORT/$1/_cache/clear" \
+    q POST "$1/_cache/clear" \
     !! cat /tmp/es_idx_list 2>&1
 
 cluster overview (co) :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/"
+    q GET ""
 
 cluster health (ch) :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cluster/health?human&pretty"
+    q GET "_cluster/health?human&pretty"
 
 cluster stats (cs) :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cluster/stats?human&pretty"
+    q GET "_cluster/stats?human&pretty"
 
 cluster recovery stats (crs) :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/recovery?v"
+    q GET "_cat/recovery?v"
 
 # ----------------------------------------------------------------------------------------------------------------------------------
 = INDEX INTERROGATION
 # ----------------------------------------------------------------------------------------------------------------------------------
 
 count (c) <index_name> :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/$1/_count?pretty" \
+    q GET "$1/_count?pretty" \
     !! cat /tmp/es_idx_list 2>&1
 
 list aliases (la) [<filter>] [<order_by_field_name>] :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/aliases/$1?v&s=$2"
+    q GET "_cat/aliases/$1?v&s=$2"
 
-list indices (li) [<index_name>] :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/indices/$1?v&h=health,status,index,pri,rep,sc,docs.count,docs.deleted,store.size,pri.store.size&s=index" | tee /tmp/es_idx_list; \
+list indices (li) [-s] [<index_name>] :: \
+    ord="index"; \
+    if [[ "$1" == "-s" ]]; then \
+        ord="store.size"; \
+        shift; \
+    fi; \
+    q GET "_cat/indices/$1?v&h=health,status,index,pri,rep,sc,docs.count,docs.deleted,store.size,pri.store.size&s=$ord" | tee /tmp/es_idx_list; \
     sed -i 's/^[^ ][^ ]*  *[^ ][^ ]*  *//; s/ .*//' /tmp/es_idx_list \
     !! cat /tmp/es_idx_list 2>&1
 
 list open (lo) [<index_name>] :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/indices/$1?v&h=health,status,index,pri,rep,sc,docs.count,docs.deleted,store.size,pri.store.size&s=index" | sed "/ close  /d" \
+    q GET "_cat/indices/$1?v&h=health,status,index,pri,rep,sc,docs.count,docs.deleted,store.size,pri.store.size&s=index" | sed "/ close  /d" \
     !! cat /tmp/es_idx_list 2>&1
 
 list dot indices (ldi) :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/indices/.*?v&s=index" \
+    q GET "_cat/indices/.*?v&s=index" \
     !! cat /tmp/es_idx_list 2>&1
 
 list shards (ls) [<index_name>] [<order_by_field_name>] :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/shards/$1?v&h=index,shard,prirep,sc,state,docs,store,node&s=index,shard,prirep&s=$2" \
+    q GET "_cat/shards/$1?v&h=index,shard,prirep,sc,state,docs,store,node&s=index,shard,prirep&s=$2" \
     !! cat /tmp/es_idx_list 2>&1
 
 list shard details (lsd) [<index_name>] [<order_by_field_name>] :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/shards/$1?v&h=index,shard,prirep,state,docs,store,ip,segments.count,unassigned.reason,unassigned.for,node&s=$2" \
+    q GET "_cat/shards/$1?v&h=index,shard,prirep,state,docs,store,ip,segments.count,unassigned.reason,unassigned.for,node&s=$2" \
     !! cat /tmp/es_idx_list 2>&1
 
 list segments (le) [<index_name>] :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/segments/$1?v&s=index,shard,prirep" \
+    q GET "_cat/segments/$1?v&s=index,shard,prirep" \
     !! cat /tmp/es_idx_list 2>&1
 
 list segmented shards (lss) [<index_name>] :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/shards/$1?v&h=index,shard,prirep,state,docs,node,segments.count&s=index,shard,prirep,node" \
+    q GET "_cat/shards/$1?v&h=index,shard,prirep,state,docs,node,segments.count&s=index,shard,prirep,node" \
     !! cat /tmp/es_idx_list 2>&1
 
 list avg segments per shard (lass) [<index_name>] :: \
-    curl -s "http://$ES_HOST:$ES_PORT/_cat/segments/$1?v&s=index,shard,prirep" | tail -n +2 | sed 's/[[:space:]]\+/ /g' | cut -d ' ' -f1,2 | \
+    q GET "_cat/segments/$1?v&s=index,shard,prirep" | tail -n +2 | sed 's/[[:space:]]\+/ /g' | cut -d ' ' -f1,2 | \
     sort | uniq -c | \
     awk '{c=$1; i=$2; sh=$3; se_c[i]+=c; sh_c[i]++} END {printf "%-52s Avg Segments\n","Index"; for (i in se_c) {avg=se_c[i]/sh_c[i]; printf "%-60s %.2f\n", i, avg}}' | sort \
     !! cat /tmp/es_idx_list 2>&1
 
 list fields (lf) <index_name> :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/$1/_mapping" | cols \
+    q GET "$1/_mapping" | cols \
     !! cat /tmp/es_idx_list 2>&1
 
 get index mapping (gim) <index_name> :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/$1/_mapping?pretty" | \
+    q GET "$1/_mapping?pretty" | \
     sed -e ':a' -e 'N' -e '$!ba' \
        -e 's/\n *\([^"]*"type"\)/ \1/g' \
        -e 's/\n *\([^"]*"normalizer"\)/ \1/g' \
@@ -93,103 +134,103 @@ get index mapping (gim) <index_name> :: \
        -e 's/} *\n *}/} }/g' \
     !! cat /tmp/es_idx_list 2>&1
 
-list unassigned shards (lus) :: curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/shards?v&h=index,shard,prirep,state,docs,segments.count&s=index,shard,prirep" 
+list unassigned shards (lus) :: q GET "_cat/shards?v&h=index,shard,prirep,state,docs,segments.count&s=index,shard,prirep" 
 
 forcemerge progress (fmp) :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/nodes?v&h=name,cpu,load_1m,merges.current,merges.current_docs,merges.total,merges.total_docs&s=name"
+    q GET "_cat/nodes?v&h=name,cpu,load_1m,merges.current,merges.current_docs,merges.total,merges.total_docs&s=name"
 
 # ----------------------------------------------------------------------------------------------------------------------------------
 = INDEX MANIPULATION
 # ----------------------------------------------------------------------------------------------------------------------------------
 
 add index to alias (aita) <index_name> <alias_name> :: \
-    curl -s -X POST "http://$ES_HOST:$ES_PORT/_aliases" -H 'Content-Type: application/json' -d '{"actions":[{"add":{"index":"'$1'","alias":"'$2'"}}]}' \
+    q POST "_aliases" -H 'Content-Type: application/json' -d '{"actions":[{"add":{"index":"'$1'","alias":"'$2'"}}]}' \
     !! cat /tmp/es_idx_list 2>&1
 
 remove index from alias (rifa) <index_name> <alias_name> :: \
     read -p "Are you sure [yN]? " yn; \
     if [[ ${yn^} == Y ]]; then \
-         curl -s -X DELETE "http://$ES_HOST:$ES_PORT/$1/_aliases/$2"; \
+         q DELETE "$1/_aliases/$2"; \
     fi \
     !! cat /tmp/es_idx_list 2>&1
 
 create index (ci) <index_name> <number_of_shards> <number_of_replicas> :: \
-    curl -s -X PUT "http://$ES_HOST:$ES_PORT/$1" -H 'Content-Type: application/json' -d '{"settings":{"index":{"number_of_shards":'$2',"number_of_replicas":'$3'}}}' \
+    q PUT "$1" -H 'Content-Type: application/json' -d '{"settings":{"index":{"number_of_shards":'$2',"number_of_replicas":'$3'}}}' \
     !! cat /tmp/es_idx_list 2>&1
 
 create index from mapping (cifm) <index_name> <number_of_shards> <number_of_replicas> <mapping-json> :: \
-    curl -s -X PUT "http://$ES_HOST:$ES_PORT/$1" -H 'Content-Type: application/json' -d '{"settings":{"index":{"number_of_shards":'$2',"number_of_replicas":'$3'}},"mappings":'"$4"'}' \
+    q PUT "$1" -H 'Content-Type: application/json' -d '{"settings":{"index":{"number_of_shards":'$2',"number_of_replicas":'$3'}},"mappings":'"$4"'}' \
     !! cat /tmp/es_idx_list 2>&1
 
 clone index (clni) <index_name> <new_index_name> :: \
-    curl -s -X POST "http://$ES_HOST:$ES_PORT/$1/_clone/$2" \
+    q POST "$1/_clone/$2" \
     !! cat /tmp/es_idx_list 2>&1
 
 delete index (di) <index_name> :: \
     read -p "Are you sure [yN]? " yn; \
     if [[ ${yn^} == Y ]]; then \
-         curl -s -X DELETE "http://$ES_HOST:$ES_PORT/$1"; \
+         q DELETE "$1"; \
     fi \
     !! cat /tmp/es_idx_list 2>&1
 
 open index (opi) <index_name> :: \
-    curl -s -X POST "http://$ES_HOST:$ES_PORT/$1/_open" \
+    q POST "$1/_open" \
     !! cat /tmp/es_idx_list 2>&1
 
 close index (cli) <index_name> :: \
-    curl -s -X POST "http://$ES_HOST:$ES_PORT/$1/_close" \
+    q POST "$1/_close" \
     !! cat /tmp/es_idx_list 2>&1
 
 enable read only (ero) <index_name> :: \
-    curl -s -X PUT "http://$ES_HOST:$ES_PORT/$1/_settings" -H 'Content-Type: application/json' -d '{"index.blocks.write": true}' \
+    q PUT "$1/_settings" -H 'Content-Type: application/json' -d '{"index.blocks.write": true}' \
     !! cat /tmp/es_idx_list 2>&1
 
 enable read write (erw) <index_name> :: \
-    curl -s -X PUT "http://$ES_HOST:$ES_PORT/$1/_settings" -H 'Content-Type: application/json' -d '{"index.blocks.write": false}' \
+    q PUT "$1/_settings" -H 'Content-Type: application/json' -d '{"index.blocks.write": false}' \
     !! cat /tmp/es_idx_list 2>&1
 
 reindex index (ri) <source_index_name> <dest_index_name> :: \
-    curl -s -X POST "http://$ES_HOST:$ES_PORT/_reindex" -H 'Content-Type: application/json' -d '{"source":{"index":"'$1'"},"dest":{"index":"'$2'"}}' \
+    q POST "_reindex" -H 'Content-Type: application/json' -d '{"source":{"index":"'$1'"},"dest":{"index":"'$2'"}}' \
     !! cat /tmp/es_idx_list 2>&1
 
 move shard (ms) <index_name> <shard_num> <from_node_name> <to_node_name> :: \
-    curl -s -X POST "http://$ES_HOST:$ES_PORT/_cluster/reroute" -H 'Content-Type: application/json' -d '{"commands":[{"move":{"index":"'$1'","shard":'$2',"from_node":"'$3'","to_node":"'$4'"}}]}' \
+    q POST "_cluster/reroute" -H 'Content-Type: application/json' -d '{"commands":[{"move":{"index":"'$1'","shard":'$2',"from_node":"'$3'","to_node":"'$4'"}}]}' \
     !! cat /tmp/es_idx_list 2>&1
 
 alter number replicas (anr) <index_name> <number_of_replicas> :: \
-    curl -s -X PUT "http://$ES_HOST:$ES_PORT/$1/_settings" -H 'Content-Type: application/json' -d '{"index":{"number_of_replicas":'$2'}}' \
+    q PUT "$1/_settings" -H 'Content-Type: application/json' -d '{"index":{"number_of_replicas":'$2'}}' \
     !! cat /tmp/es_idx_list 2>&1
 
 disable shard allocation (dsa) :: \
-    curl -s -X PUT "http://$ES_HOST:$ES_PORT/_cluster/settings" -H 'Content-Type: application/json' -d '{"persistent":{"cluster.routing.allocation.enable":"primaries"}}'
+    q PUT "_cluster/settings" -H 'Content-Type: application/json' -d '{"persistent":{"cluster.routing.allocation.enable":"primaries"}}'
 
 reenable shard allocation (rsa) :: \
-    curl -s -X PUT "http://$ES_HOST:$ES_PORT/_cluster/settings" -H 'Content-Type: application/json' -d '{"persistent":{"cluster.routing.allocation.enable":null}}'
+    q PUT "_cluster/settings" -H 'Content-Type: application/json' -d '{"persistent":{"cluster.routing.allocation.enable":null}}'
 
 forcemerge (fm) <index_name> <max_num_segments> :: \
-    curl -s -X POST "http://$ES_HOST:$ES_PORT/$1/_forcemerge?max_num_segments=$2" \
+    q POST "$1/_forcemerge?max_num_segments=$2" \
     !! cat /tmp/es_idx_list 2>&1
 
 refresh (r) <index_name> :: \
-    curl -s -X POST "http://$ES_HOST:$ES_PORT/$1/_refresh" \
+    q POST "$1/_refresh" \
     !! cat /tmp/es_idx_list 2>&1
 
 # ----------------------------------------------------------------------------------------------------------------------------------
 = INDEX ENTRY MANIPULATION
 # ----------------------------------------------------------------------------------------------------------------------------------
 
-add entry (ae) <index_name> <entry_json> :: curl -s -X POST "http://$ES_HOST:$ES_PORT/$1/_doc" -H 'Content-Type: application/json' -d "$2" \
+add entry (ae) <index_name> <entry_json> :: q POST "$1/_doc" -H 'Content-Type: application/json' -d "$2" \
     !! cat /tmp/es_idx_list 2>&1
 
 delete entry (de) <index_name> [<_id>] :: \
     if [[ "$2" == "" ]]; then \
         read -p "This will delete ALL RECORDS - Are you sure [yN]? " yn; \
         if [[ ${yn^} == Y ]]; then \
-            curl -s -X POST "http://localhost:9200/$1/_delete_by_query" -H 'Content-Type: application/json' \
+            q POST "$1/_delete_by_query" -H 'Content-Type: application/json' \
                  -d '{ "query": { "match_all": {} } }' | pj; \
         fi; \
     else \
-        curl -s -X POST "http://localhost:9200/$1/_delete_by_query" -H 'Content-Type: application/json' \
+        q POST "$1/_delete_by_query" -H 'Content-Type: application/json' \
              -d '{ "query": { "ids": { "values": [ "'$2'" ] } } }' | pj; \
     fi \
     !! cat /tmp/es_idx_list 2>&1 \
@@ -202,25 +243,25 @@ delete entry (de) <index_name> [<_id>] :: \
 # ----------------------------------------------------------------------------------------------------------------------------------
 
 list nodes (ln) :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/nodes?v&h=name,ip,nodeRole,m,heapPercent,ramPercent,cpu,load_1m,load_5m,load_15m,disk.total,disk.used_percent&s=name"
+    q GET "_cat/nodes?v&h=name,ip,nodeRole,m,heapPercent,ramPercent,cpu,load_1m,load_5m,load_15m,disk.total,disk.used_percent&s=name"
 
 list node attributes (lna) :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/nodeattrs?v&s=node"
+    q GET "_cat/nodeattrs?v&s=node"
 
 list nodes queries (lnq) :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/nodes?v&h=name,nodeRole,search,queryTotal,searchFetchTotal,requestCacheHitCount&s=name"
+    q GET "_cat/nodes?v&h=name,nodeRole,search,queryTotal,searchFetchTotal,requestCacheHitCount&s=name"
 
 search nodes (sn) :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/_nodes"
+    q GET "_nodes"
 
 node active threads (at) :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/thread_pool?v&s=node_name,name"
+    q GET "_cat/thread_pool?v&s=node_name,name"
 
 node thread pool sizes (tps) :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/thread_pool?v&h=node_name,name,size,active,queue,queue_size,largest,min,max&s=node_name,name"
+    q GET "_cat/thread_pool?v&h=node_name,name,size,active,queue,queue_size,largest,min,max&s=node_name,name"
 
 node perf overview (npo) :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/nodes?v&h=ip,port,role,master,cpu,ft,ftt,iic,iif,mt,mtt,d,mcs"
+    q GET "_cat/nodes?v&h=ip,port,role,master,cpu,ft,ftt,iic,iif,mt,mtt,d,mcs"
 
 # ----------------------------------------------------------------------------------------------------------------------------------
 = SEARCH
@@ -228,23 +269,23 @@ node perf overview (npo) :: \
 
 search (s) <index_name> [<search_term>] :: \
     if [[ "$2" == "" ]]; then term="*"; else term="$2"; fi; \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/$1/_search?q=${term}&pretty" | pj \
+    q GET "$1/_search?q=${term}&pretty" | pj \
     !! cat /tmp/es_idx_list 2>&1
 
 search json (sj) <index_name> <search_json> :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/$1/_search?pretty" -H 'Content-Type: application/json' -d "$2" \
+    q GET "$1/_search?pretty" -H 'Content-Type: application/json' -d "$2" \
     !! cat /tmp/es_idx_list 2>&1
 
 search match (sm) <index_name> <field_name> <value> :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/$1/_search?pretty" -H 'Content-Type: application/json' -d '{"query": { "match": { "'$2'": "'$3'" } } }' \
+    q GET "$1/_search?pretty" -H 'Content-Type: application/json' -d '{"query": { "match": { "'$2'": "'$3'" } } }' \
     !! cat /tmp/es_idx_list 2>&1
 
 search term (st) <index_name> <field_name> <value> :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/$1/_search?pretty" -H 'Content-Type: application/json' -d '{"query": { "term": { "'$2'": "'$3'" } } }' \
+    q GET "$1/_search?pretty" -H 'Content-Type: application/json' -d '{"query": { "term": { "'$2'": "'$3'" } } }' \
     !! cat /tmp/es_idx_list 2>&1
 
 search summary (ss) <index_name> <search_term> :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/$1/_search?size=0&pretty" -H 'Content-Type: application/json' -d '{"aggs": {"count": {"terms": { "field" : "'$2'", "size" : 100 } } } }' \
+    q GET "$1/_search?size=0&pretty" -H 'Content-Type: application/json' -d '{"aggs": {"count": {"terms": { "field" : "'$2'", "size" : 100 } } } }' \
     !! cat /tmp/es_idx_list 2>&1
 
 # ----------------------------------------------------------------------------------------------------------------------------------
@@ -266,44 +307,44 @@ sql (sql) <sql> :: \
 # ----------------------------------------------------------------------------------------------------------------------------------
 
 list tasks (lt) [<sort_field>] :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/tasks?v&h=action,type,start_time,timestamp,running_time,node&s=$1"
+    q GET "_cat/tasks?v&h=action,type,start_time,timestamp,running_time,node&s=$1"
 
 list tasks detail (ltd) [<sort_field>] :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/tasks?v&s=$1"
+    q GET "_cat/tasks?v&s=$1"
 
 # ----------------------------------------------------------------------------------------------------------------------------------
 = REPOS / SNAPSHOTS
 # ----------------------------------------------------------------------------------------------------------------------------------
 
 add repo (are) <repo_name> :: \
-    curl -s -X PUT "http://$ES_HOST:$ES_PORT/_snapshot/$1?pretty" -H 'Content-Type: application/json' -d '{ "type": "fs", "settings": { "location": "'$1'" } } '
+    q PUT "_snapshot/$1?pretty" -H 'Content-Type: application/json' -d '{ "type": "fs", "settings": { "location": "'$1'" } } '
 
 delete repo (dre) <repo_name> :: \
     read -p "Are you sure [yN]? " yn; \
     if [[ ${yn^} == Y ]]; then \
-         curl -s -X DELETE "http://$ES_HOST:$ES_PORT/_snapshot/$1?pretty"; \
+         q DELETE "_snapshot/$1?pretty"; \
     fi
 
 list repos (lre) :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/repositories?v"
+    q GET "_cat/repositories?v"
 
 create snapshot (csn) <repo_name> <snapshot_name> :: \
-    curl -s -X PUT "http://$ES_HOST:$ES_PORT/_snapshot/$1/$2?pretty"
+    q PUT "_snapshot/$1/$2?pretty"
 
 delete snapshot (dsn) <repo_name> <snapshot_name> :: \
     read -p "Are you sure [yN]? " yn; \
     if [[ ${yn^} == Y ]]; then \
-         curl -s -X DELETE "http://$ES_HOST:$ES_PORT/_snapshot/$1/$2?pretty"; \
+         q DELETE "_snapshot/$1/$2?pretty"; \
     fi
 
 list snapshots (lsn) :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/_cat/snapshots?v"
+    q GET "_cat/snapshots?v"
 
 snapshot details (snd) <repo_name> <snapshot_name> :: \
-    curl -s -X GET "http://$ES_HOST:$ES_PORT/_snapshot/$1/$2?pretty"
+    q GET "_snapshot/$1/$2?pretty"
 
 restore snaphot (rsn) <repo_name> <snapshot_name> :: \
-    curl -s -X POST "http://$ES_HOST:$ES_PORT/_snapshot/$1/$2/_restore?pretty"
+    q POST "_snapshot/$1/$2/_restore?pretty"
 
 # ----------------------------------------------------------------------------------------------------------------------------------
 = GENERIC

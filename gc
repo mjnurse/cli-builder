@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+debug_yn=n
+[[ "$1" == "-d" ]] && { debug_yn=y; shift; }
+[[ "${CLI_DEBUG^^}" == "TRUE" ]] && debug_yn=y
+
+C_CYA="\x1b[96m" C_GRE="\x1b[92m" C_MAG="\x1b[95m" C_WHI="\x1b[97m" C_DEF="\x1b[0m"
+
+# param 1 - actual number of parameters
+# param 2 - required number of parameters
+# param 3 - incorrect parameters message
+check_params() {
+  [[ "$1" < "$2" ]] && { echo -e "$3"; exit; }
+}
+
+print_command() {
+  [[ $debug_yn == y ]] && { echo "COMMAND: $*" | sed 's/"/\"/g'; echo "COMMAND: $*" | sed 's/./-/g'; }
+}
+section="HELP"
+
+if [[ "$1" == "help" || "$1" == "ghe" ]]; then
+   [[ "$1" == "ghe" ]] && shift || shift 1
+   usage="\x1b[95mhelp \x1b[96m(ghe)\x1b[97m\x1b[0m"
+   check_params $# 0 "Usage: $usage"
+   
+echo -e "\x1b[92m------------\x1b[0m"
+echo -e "\x1b[92mGCloud (GCP)\x1b[0m"
+echo -e "\x1b[92m------------\x1b[0m"
+
+echo -e "\x1b[95mgenerated:2026-06-11 15:19\x1b[0m"
+echo
+
+            while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/\x1b[92m/; s/\"//g")
+   exit
+fi
+if [[ "$GCP_PROJECT" != "" ]]; then GCP_PROJECT="--project $GCP_PROJECT"; fi
+gc() { echo PROJ: $GCP_PROJECT; gcloud "$@" $GCP_PROJECT; }
+section="Config"
+
+if [[ "$1 $2" == "config list" || "$1" == "gcl" ]]; then
+   [[ "$1" == "gcl" ]] && shift || shift 2
+   usage="\x1b[95mconfig list \x1b[96m(gcl)\x1b[97m\x1b[0m"
+   check_params $# 0 "Usage: $usage"
+   print_command " gcloud config list"
+   gcloud config list
+   exit
+fi
+section="Projects"
+
+if [[ "$1 $2" == "project get" || "$1" == "gpg" ]]; then
+   [[ "$1" == "gpg" ]] && shift || shift 2
+   usage="\x1b[95mproject get \x1b[96m(gpg)\x1b[97m\x1b[0m"
+   check_params $# 0 "Usage: $usage"
+   print_command " gcloud config get project"
+   gcloud config get project
+   exit
+fi
+
+if [[ "$1 $2" == "project list" || "$1" == "gpl" ]]; then
+   [[ "$1" == "gpl" ]] && shift || shift 2
+   usage="\x1b[95mproject list \x1b[96m(gpl)\x1b[97m\x1b[0m"
+   check_params $# 0 "Usage: $usage"
+   print_command " gcloud projects list"
+   gcloud projects list
+   exit
+fi
+
+if [[ "$1 $2" == "project set" || "$1" == "gps" ]]; then
+   [[ "$1" == "gps" ]] && shift || shift 2
+   usage="\x1b[95mproject set \x1b[96m(gps)\x1b[97m\x1b[0m"
+   check_params $# 0 "Usage: $usage"
+   print_command " echo \"Available GCP Projects:\" && gcloud projects list --format=\"table[no-heading](projectId,name)\" | awk '{printf \"%d. %s (%s)\n\", NR, $1, substr($0, index($0,$2))}' | tee /tmp/projects.txt && read -p $'\nEnter project number: ' num && project=$(sed -n \"${num}p\" /tmp/projects.txt | awk '{print $2}') && gcloud config set project \"$project\" && echo \"Project set to: $project\""
+   echo "Available GCP Projects:" && gcloud projects list --format="table[no-heading](projectId,name)" | awk '{printf "%d. %s (%s)\n", NR, $1, substr($0, index($0,$2))}' | tee /tmp/projects.txt && read -p $'\nEnter project number: ' num && project=$(sed -n "${num}p" /tmp/projects.txt | awk '{print $2}') && gcloud config set project "$project" && echo "Project set to: $project"
+   exit
+fi
+section="Compute Engine (GCE)"
+
+if [[ "$1 $2 $3" == "compute instances list" || "$1" == "gcil" ]]; then
+   [[ "$1" == "gcil" ]] && shift || shift 3
+   usage="\x1b[95mcompute instances list \x1b[96m(gcil)\x1b[97m\x1b[0m"
+   check_params $# 0 "Usage: $usage"
+   print_command " gc compute instances list"
+   gc compute instances list
+   exit
+fi
+section="Kubernetes/Containers"
+
+if [[ "$1 $2 $3" == "kube clusters list" || "$1" == "gkcl" ]]; then
+   [[ "$1" == "gkcl" ]] && shift || shift 3
+   usage="\x1b[95mkube clusters list \x1b[96m(gkcl)\x1b[97m\x1b[0m"
+   check_params $# 0 "Usage: $usage"
+   print_command " gcloud container clusters list"
+   gcloud container clusters list
+   exit
+fi
+
+if [[ "$1" == "" ]]; then
+  echo "No option passed"
+else
+  echo "$*: invalid option"
+fi
+echo "Try "gc help" for more information."

@@ -1,0 +1,44 @@
+@ GCloud (GCP)
+
+cmd if [[ "$GCP_PROJECT" != "" ]]; then GCP_PROJECT="--project $GCP_PROJECT"; fi
+
+cmd gc() { \
+    echo PROJ: $GCP_PROJECT; \
+    gcloud "$@" $GCP_PROJECT; \
+}
+
+# --------------------------------------------------------------------------------
+= Config
+# --------------------------------------------------------------------------------
+
+config list (cl) :: gcloud config list
+
+# --------------------------------------------------------------------------------
+= Projects
+# --------------------------------------------------------------------------------
+
+project get (pg) :: gcloud config get project
+
+project list (pl) :: gcloud projects list
+
+project set (ps) :: \
+    echo "Available GCP Projects:" && \
+    gcloud projects list --format="table[no-heading](projectId,name)" | \
+    awk '{printf "%d. %s (%s)\n", NR, $1, substr($0, index($0,$2))}' | \
+    tee /tmp/projects.txt && \
+    read -p $'\nEnter project number: ' num && \
+    project=$(sed -n "${num}p" /tmp/projects.txt | awk '{print $2}') && \
+    gcloud config set project "$project" && \
+    echo "Project set to: $project"
+
+# --------------------------------------------------------------------------------
+= Compute Engine (GCE)
+# --------------------------------------------------------------------------------
+
+compute instances list (cil) :: gc compute instances list 
+
+# --------------------------------------------------------------------------------
+= Kubernetes/Containers
+# --------------------------------------------------------------------------------
+
+kube clusters list (kcl) :: gcloud container clusters list

@@ -1,5 +1,5 @@
 # Completion function
-_gi_complete() {
+_gc_complete() {
     local cur prev all
     all=""
     for ((i = 1; i < ${#COMP_WORDS[@]}; i++)); do
@@ -16,20 +16,13 @@ _gi_complete() {
     done
 
 }
-complete -F _gi_complete gi @gihe @giacp @gilbl @gilbr @gic @gica @gicb @gif @gih @gipu @gipo @giscm @gis @gisb
+complete -F _gc_complete gc @ghe @gcl @gpg @gpl @gps @gcil @gkcl
 
 # Shortcut aliases
-alias @gihe='gi gihe'
-alias @giacp='gi giacp'
-alias @gilbl='gi gilbl'
-alias @gilbr='gi gilbr'
-alias @gic='gi gic'
-alias @gica='gi gica'
-alias @gicb='gi gicb'
-alias @gif='gi gif'
-alias @gih='gi gih'
-alias @gipu='gi gipu'
-alias @gipo='gi gipo'
-alias @giscm='gi giscm'
-alias @gis='gi gis'
-alias @gisb='gi gisb'
+alias @ghe='gc ghe'
+alias @gcl='gc gcl'
+alias @gpg='gc gpg'
+alias @gpl='gc gpl'
+alias @gps='gc gps'
+alias @gcil='gc gcil'
+alias @gkcl='gc gkcl'

@@ -43,6 +43,17 @@ DESCRIPTION
   ## - text following ## is a help description for the command.  This text is shown when
         the help command is run.
 
+  @ - a line starting with @ followed by a space sets the title for the cli.  The title is shown
+      at the top of the help output.
+
+  @@ - a line starting with @@ followed by a space is a description for the cli.  If the
+       description spans multiple lines, each line must start with @@.  The description is shown
+       below the title in the help output.
+
+  aliasLeadChars: - sets the leading character(s) for generated aliases (default: first char of
+                    definition filename).  For example, 'aliasLeadChars: es' will generate aliases
+                    like @esli, @essi instead of @eli, @esi.
+
   ( \ - is the line continuation character.  Any line ending \ is joined to the next line. )
 
   All other lines in the file are command definitions.  These lines are structured as follows:
@@ -121,7 +132,7 @@ class Cmd:
     def opt_params(self):
         return [p for p, opt in self.params if opt]
 
-def parse_def(lines, title, cli_name):
+def parse_def(lines, title, description, cli_name, alias_lead_chars):
     """Parse definition file into commands and groups"""
     group = ""
     cmds = []
@@ -133,14 +144,19 @@ echo -e "{C_GRE}{"-"*len(title)}{C_DEF}"
 echo -e "{C_GRE}{title}{C_DEF}"
 echo -e "{C_GRE}{"-"*len(title)}{C_DEF}"
 '''
+    if description:
+        desc_lines = '\n'.join(f'echo -e "{C_WHI}{line}{C_DEF}"' for line in description)
+        title_str += f'''
+{desc_lines}
+'''
     title_str += f'''
-echo -e "{C_GRE}gen:{datetime.now().strftime('%Y-%m-%d %H:%M')}{C_DEF}"
+echo -e "{C_MAG}generated:{datetime.now().strftime('%Y-%m-%d %H:%M')}{C_DEF}"
 echo
 '''
 
     cmds.append(('cmd', Cmd(
             keys=['help'],
-            shortcut=cli_name[0] + 'he',
+            shortcut=alias_lead_chars + 'he',
             params=[],
             cmd=title_str + f'''
             while IFS= read -r line; do echo -e "${{line}}${{CRESET}}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/\\x1b[92m/; s/\\"//g")''',
@@ -183,17 +199,17 @@ echo
 
         for tok in tokens:
             if tok.startswith('('):
-                shortcut = cli_name[0] + tok.strip('()')
+                shortcut = alias_lead_chars + tok.strip('()')
             elif tok.startswith('['):
                 params.append((tok.strip('[]<>'), True))
             elif tok.startswith('<'):
                 params.append((tok.strip('<>'), False))
             else:
                 keys.append(tok)
-        
+
         # Auto-generate shortcut if not provided
         if not shortcut:
-            shortcut = cli_name[0] + ''.join(k[0] for k in keys[:2])
+            shortcut = alias_lead_chars + ''.join(k[0] for k in keys[:2])
 
         cmds.append(('cmd', Cmd(
             keys=keys,
@@ -316,9 +332,11 @@ complete -F _{cli_name}_complete {cli_name} {alias_names}
 {chr(10).join(aliases)}
 '''
 
-def gen_markdown_file(cli_name, cmds, title):
+def gen_markdown_file(cli_name, cmds, title, description):
     """Generate markdown documentation file"""
     md_content = f"# {title if title else cli_name.upper()}\n\n"
+    if description:
+        md_content += '\n'.join(description) + '\n\n'
     md_content += f"*Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}*\n\n"
 
     current_group = ""
@@ -375,13 +393,23 @@ def main():
         # Parse definition file
         with open(f'{def_file}.def') as f:
             lines = [l.rstrip() for l in f]
-        
-        # Handle line continuations, extract title
+
+        # Handle line continuations, extract title, description, and aliasLeadChars
         i = 0
         title = ""
+        description = []
+        alias_lead_chars = cli_name[0]  # Default to first char of filename
         while i < len(lines):
-            if lines[i].startswith('@ '):
+            if lines[i].startswith('@ ') and not lines[i].startswith('@@ '):
                 title = lines[i][2:].strip()
+                del lines[i]
+                continue
+            if lines[i].startswith('@@ '):
+                description.append(lines[i][3:].strip())
+                del lines[i]
+                continue
+            if lines[i].startswith('aliasLeadChars:'):
+                alias_lead_chars = lines[i].split(':', 1)[1].strip()
                 del lines[i]
                 continue
             if lines[i].endswith('\\'):
@@ -389,8 +417,8 @@ def main():
                 del lines[i+1]
             else:
                 i += 1
-        
-        cmds = parse_def(lines, title,cli_name)
+
+        cmds = parse_def(lines, title, description, cli_name, alias_lead_chars)
         
         if debug:
             print("Commands")
@@ -402,7 +430,7 @@ def main():
         # Generate files
         script, aliases, comp_opts = gen_script(cli_name, cmds, debug)
         alias_content = gen_alias_file(cli_name, aliases, comp_opts)
-        markdown_content = gen_markdown_file(cli_name, cmds, title)
+        markdown_content = gen_markdown_file(cli_name, cmds, title, description)
 
         with open(cli_name, 'w') as f:
             f.write(script)

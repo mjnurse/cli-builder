@@ -1,11 +1,21 @@
-# ES
+# Elasticsearch
 
-*Generated: 2026-05-28 16:43*
+CLI uses environment variables:
+- ES_PROTOCOL (default: http),
+- ES_HOST (default: localhost)
+- ES_PORT (default: 9200),
+- ES_PATH (default: <blank>), and
+- ES_AUTH (default: <blank> - no auth required)
+Use command show settings (ss) to see environment variable values.
+
+*Generated: 2026-06-11 17:55*
 
 
 ## HELP
 
 **`help (ehe)`**
+
+**`show settings (ess)`**
 
 
 ## CLUSTER
@@ -27,7 +37,7 @@
 
 **`list aliases (ela) [filter] [order_by_field_name]`**
 
-**`list indices (eli) [index_name]`**
+**`list indices (eli) [-s] [index_name]`**
 
 **`list open (elo) [index_name]`**
 
