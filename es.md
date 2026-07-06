@@ -8,7 +8,7 @@ CLI uses environment variables:
 - ES_AUTH (default: <blank> - no auth required)
 Use command show settings (ss) to see environment variable values.
 
-*Generated: 2026-06-11 17:55*
+*Generated: 2026-06-23 14:14*
 
 
 ## HELP

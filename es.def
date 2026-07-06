@@ -316,8 +316,8 @@ list tasks detail (ltd) [<sort_field>] :: \
 = REPOS / SNAPSHOTS
 # ----------------------------------------------------------------------------------------------------------------------------------
 
-add repo (are) <repo_name> :: \
-    q PUT "_snapshot/$1?pretty" -H 'Content-Type: application/json' -d '{ "type": "fs", "settings": { "location": "'$1'" } } '
+add repo (are) <repo_name> <repo_location> [<base_path>] :: \
+    q PUT "_snapshot/$1?pretty" -H 'Content-Type: application/json' -d '{ "type": "fs", "settings": { "location": "'$2'", "base_path": "'$3'" } } '
 
 delete repo (dre) <repo_name> :: \
     read -p "Are you sure [yN]? " yn; \
