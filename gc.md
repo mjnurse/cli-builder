@@ -1,11 +1,11 @@
 # GCloud (GCP)
 
-*Generated: 2026-06-11 15:19*
+*Generated: 2026-07-14 10:39*
 
 
 ## HELP
 
-**`help (ghe)`**
+**`help (ghe) [filter]`** - Show help, optionally filtered by pattern
 
 
 ## Config

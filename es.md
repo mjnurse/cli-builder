@@ -8,12 +8,12 @@ CLI uses environment variables:
 - ES_AUTH (default: <blank> - no auth required)
 Use command show settings (ss) to see environment variable values.
 
-*Generated: 2026-06-23 14:14*
+*Generated: 2026-07-14 10:39*
 
 
 ## HELP
 
-**`help (ehe)`**
+**`help (ehe) [filter]`** - Show help, optionally filtered by pattern
 
 **`show settings (ess)`**
 
@@ -150,7 +150,7 @@ Use command show settings (ss) to see environment variable values.
 
 ## REPOS / SNAPSHOTS
 
-**`add repo (eare) <repo_name>`**
+**`add repo (eare) <repo_name> <repo_location> [base_path]`**
 
 **`delete repo (edre) <repo_name>`**
 

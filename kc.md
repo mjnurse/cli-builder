@@ -1,11 +1,11 @@
 # KC
 
-*Generated: 2026-06-11 13:33*
+*Generated: 2026-07-14 10:39*
 
 
 ## HELP
 
-**`help (khe)`**
+**`help (khe) [filter]`** - Show help, optionally filtered by pattern
 
 
 ## ALL

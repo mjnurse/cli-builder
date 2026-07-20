@@ -23,7 +23,7 @@ cmd q() { \
     if [[ "$ES_AUTH" != "" ]]; then \
         ES_AUTH="-u $ES_AUTH"; \
     fi; \
-    curl -s -X $method $ES_AUTH $ES_PROTOCOL://$ES_HOST:$ES_PORT$ES_PATH/$@; \
+    curl -s -X $method $ES_AUTH $ES_PROTOCOL://$ES_HOST:$ES_PORT$ES_PATH/"$@"; \
 }
 
 # ----------------------------------------------------------------------------------------------------------------------------------

@@ -19,7 +19,7 @@ section="HELP"
 
 if [[ "$1" == "help" || "$1" == "ehe" ]]; then
    [[ "$1" == "ehe" ]] && shift || shift 1
-   usage="\x1b[95mhelp \x1b[96m(ehe)\x1b[97m\x1b[0m"
+   usage="\x1b[95mhelp \x1b[96m(ehe)\x1b[97m [filter]\x1b[92m # Show help, optionally filtered by pattern\x1b[0m"
    check_params $# 0 "Usage: $usage"
    
 echo -e "\x1b[92m-------------\x1b[0m"
@@ -34,10 +34,27 @@ echo -e "\x1b[97m- ES_PATH (default: <blank>), and\x1b[0m"
 echo -e "\x1b[97m- ES_AUTH (default: <blank> - no auth required)\x1b[0m"
 echo -e "\x1b[97mUse command show settings (ss) to see environment variable values.\x1b[0m"
 
-echo -e "\x1b[95mgenerated:2026-06-23 14:14\x1b[0m"
+echo -e "\x1b[95mgenerated:2026-07-14 10:39\x1b[0m"
 echo
-
-            while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "usage=|section=" "$0" | grep -v "grep" | sed "s/.*usage=/   /; s/.*section=/\x1b[92m/; s/\"//g")
+filter="$1"
+if [[ -n "$filter" ]]; then
+  # Show all section headers but only matching commands
+  while IFS= read -r line; do
+    if [[ "$line" =~ ^section= ]]; then
+      # Always show section headers
+      echo -e "\x1b[92m${line#section=}\x1b[0m"
+    elif [[ "$line" =~ usage= ]]; then
+      # Show command if it matches the filter
+      cmd_line="${line#*usage=}"
+      if echo "$cmd_line" | grep -iq "$filter"; then
+        echo -e "   $cmd_line"
+      fi
+    fi
+  done < <(egrep "^section=|^   usage=" "$0" | sed 's/\"//g')
+else
+  # Show everything
+  while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "^section=|^   usage=" "$0" | sed "s/.*usage=/   /; s/.*section=/\x1b[92m/; s/\"//g")
+fi
    exit
 fi
 ES_HOST="${ES_HOST:-localhost}"
@@ -545,10 +562,10 @@ section="REPOS / SNAPSHOTS"
 
 if [[ "$1 $2" == "add repo" || "$1" == "eare" ]]; then
    [[ "$1" == "eare" ]] && shift || shift 2
-   usage="\x1b[95madd repo \x1b[96m(eare)\x1b[97m <repo_name>\x1b[0m"
-   check_params $# 1 "Usage: $usage"
-   print_command " q PUT \"_snapshot/$1?pretty\" -H 'Content-Type: application/json' -d '{ \"type\": \"fs\", \"settings\": { \"location\": \"'$1'\" } } '"
-   q PUT "_snapshot/$1?pretty" -H 'Content-Type: application/json' -d '{ "type": "fs", "settings": { "location": "'$1'" } } '
+   usage="\x1b[95madd repo \x1b[96m(eare)\x1b[97m <repo_name> <repo_location> [base_path]\x1b[0m"
+   check_params $# 2 "Usage: $usage"
+   print_command " q PUT \"_snapshot/$1?pretty\" -H 'Content-Type: application/json' -d '{ \"type\": \"fs\", \"settings\": { \"location\": \"'$2'\", \"base_path\": \"'$3'\" } } '"
+   q PUT "_snapshot/$1?pretty" -H 'Content-Type: application/json' -d '{ "type": "fs", "settings": { "location": "'$2'", "base_path": "'$3'" } } '
    exit
 fi
 

@@ -1,11 +1,11 @@
 # DC
 
-*Generated: 2026-06-11 13:33*
+*Generated: 2026-07-14 10:39*
 
 
 ## HELP
 
-**`help (dhe)`**
+**`help (dhe) [filter]`** - Show help, optionally filtered by pattern
 
 
 ## IMAGES
