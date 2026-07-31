@@ -26,7 +26,7 @@ echo -e "\x1b[92m------------\x1b[0m"
 echo -e "\x1b[92mGCloud (GCP)\x1b[0m"
 echo -e "\x1b[92m------------\x1b[0m"
 
-echo -e "\x1b[95mgenerated:2026-07-14 10:39\x1b[0m"
+echo -e "\x1b[95mgenerated:2026-07-29 09:22\x1b[0m"
 echo
 filter="$1"
 if [[ -n "$filter" ]]; then
@@ -52,6 +52,15 @@ fi
 if [[ "$GCP_PROJECT" != "" ]]; then GCP_PROJECT="--project $GCP_PROJECT"; fi
 gc() { echo PROJ: $GCP_PROJECT; gcloud "$@" $GCP_PROJECT; }
 section="Config"
+
+if [[ "$1 $2" == "auth login" || "$1" == "gal" ]]; then
+   [[ "$1" == "gal" ]] && shift || shift 2
+   usage="\x1b[95mauth login \x1b[96m(gal)\x1b[97m\x1b[92m # auth login with --no-launch-browser\x1b[0m"
+   check_params $# 0 "Usage: $usage"
+   print_command " gcloud auth login --no-launch-browser"
+   gcloud auth login --no-launch-browser
+   exit
+fi
 
 if [[ "$1 $2" == "config list" || "$1" == "gcl" ]]; then
    [[ "$1" == "gcl" ]] && shift || shift 2
