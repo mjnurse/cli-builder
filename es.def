@@ -76,6 +76,7 @@ list aliases (la) [<filter>] [<order_by_field_name>] :: \
     q GET "_cat/aliases/$1?v&s=$2"
 
 list indices (li) [-s] [<index_name>] :: \
+    if [[ "$1" == "-f" ]]; then watch es eli; exit; fi; \
     ord="index"; \
     if [[ "$1" == "-s" ]]; then \
         ord="store.size"; \
@@ -83,7 +84,8 @@ list indices (li) [-s] [<index_name>] :: \
     fi; \
     q GET "_cat/indices/$1?v&h=health,status,index,pri,rep,sc,docs.count,docs.deleted,store.size,pri.store.size&s=$ord" | tee /tmp/es_idx_list; \
     sed -i 's/^[^ ][^ ]*  *[^ ][^ ]*  *//; s/ .*//' /tmp/es_idx_list \
-    !! cat /tmp/es_idx_list 2>&1
+    !! cat /tmp/es_idx_list 2>&1 \
+    ## -s: order by size
 
 list open (lo) [<index_name>] :: \
     q GET "_cat/indices/$1?v&h=health,status,index,pri,rep,sc,docs.count,docs.deleted,store.size,pri.store.size&s=index" | sed "/ close  /d" \

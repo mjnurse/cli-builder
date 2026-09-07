@@ -25,15 +25,16 @@ delete container (rm) <container_name> :: \
     fi \
     !! docker ps --all --format '{{.Names}}' \
 
-list containers (ps) [<-d>] :: \
-    if [[ $1 == -d ]]; then docker ps --all; \ 
+list containers (ps) [<-d>|<-f>] :: \
+    if [[ $1 == -f ]]; then watch dc dps; \ 
+    elif [[ $1 == -d ]]; then docker ps --all; \ 
     else \
         tmp="$(docker ps --all --format 'table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Size}}')"; \
         echo "$tmp" | head -n1; \
         echo "$tmp" | tail -n+2 | grep 'Up [0-9]* min' | sort -k2,2; \
         echo "$tmp" | tail -n+2 | grep -v 'Up [0-9]* min' | sort -k 2,2; \
     fi \
-    ## -d: show details
+    ## -d: show details -f: watch/follow
 
 logs (lo) [<-f>] <container-name> :: \
     if [[ $1 == -f ]]; then docker logs -f $2; else docker logs $1; fi \

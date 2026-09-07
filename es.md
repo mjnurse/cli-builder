@@ -8,7 +8,7 @@ CLI uses environment variables:
 - ES_AUTH (default: <blank> - no auth required)
 Use command show settings (ss) to see environment variable values.
 
-*Generated: 2026-07-14 10:39*
+*Generated: 2026-09-07 10:34*
 
 
 ## HELP
@@ -37,7 +37,7 @@ Use command show settings (ss) to see environment variable values.
 
 **`list aliases (ela) [filter] [order_by_field_name]`**
 
-**`list indices (eli) [-s] [index_name]`**
+**`list indices (eli) [-s] [index_name]`** - -s: order by size
 
 **`list open (elo) [index_name]`**
 

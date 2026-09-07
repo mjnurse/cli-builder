@@ -11,8 +11,11 @@ cmd gc() { \
 = Config
 # --------------------------------------------------------------------------------
 
-auth login (al) :: gcloud auth login --no-launch-browser \
-    ## auth login with --no-launch-browser
+auth login (al) [-a] :: \
+    if [[ "$1" == "-a" ]]; then gcloud auth application-default login --no-launch-browser; \
+    else gcloud auth login --no-launch-browser; \
+    fi \
+    ## auth login with --no-launch-browser. -a: adds application-default
 
 config list (cl) :: gcloud config list
 

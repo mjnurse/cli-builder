@@ -34,7 +34,7 @@ echo -e "\x1b[97m- ES_PATH (default: <blank>), and\x1b[0m"
 echo -e "\x1b[97m- ES_AUTH (default: <blank> - no auth required)\x1b[0m"
 echo -e "\x1b[97mUse command show settings (ss) to see environment variable values.\x1b[0m"
 
-echo -e "\x1b[95mgenerated:2026-07-14 10:39\x1b[0m"
+echo -e "\x1b[95mgenerated:2026-09-07 10:34\x1b[0m"
 echo
 filter="$1"
 if [[ -n "$filter" ]]; then
@@ -63,7 +63,7 @@ if [[ "${ES_PATH%/}" != "" ]]; then ES_PATH="/${ES_PATH%/}"; fi
 ES_PROTOCOL="${ES_PROTOCOL:-http}"
 pj() { if command -v jq >/dev/null 2>&1; then jq .; else cat; fi; }
 cols() { python3 -c 'import sys,json;f=lambda d,p="":[f(v["properties"],p+k+".") if isinstance(v,dict) and "properties" in v else print(p+k) for k,v in d.items()];[f(i["mappings"]["properties"]) for i in json.load(sys.stdin).values()]'; }
-q() { local method="$1"; shift; if [[ "$ES_AUTH" != "" ]]; then ES_AUTH="-u $ES_AUTH"; fi; curl -s -X $method $ES_AUTH $ES_PROTOCOL://$ES_HOST:$ES_PORT$ES_PATH/$@; }
+q() { local method="$1"; shift; if [[ "$ES_AUTH" != "" ]]; then ES_AUTH="-u $ES_AUTH"; fi; curl -s -X $method $ES_AUTH $ES_PROTOCOL://$ES_HOST:$ES_PORT$ES_PATH/"$@"; }
 
 if [[ "$1 $2" == "show settings" || "$1" == "ess" ]]; then
    [[ "$1" == "ess" ]] && shift || shift 2
@@ -141,10 +141,10 @@ fi
 
 if [[ "$1 $2" == "list indices" || "$1" == "eli" ]]; then
    [[ "$1" == "eli" ]] && shift || shift 2
-   usage="\x1b[95mlist indices \x1b[96m(eli)\x1b[97m [-s] [index_name]\x1b[0m"
+   usage="\x1b[95mlist indices \x1b[96m(eli)\x1b[97m [-s] [index_name]\x1b[92m # -s: order by size\x1b[0m"
    check_params $# 0 "Usage: $usage"
-   print_command " ord=\"index\"; if [[ \"$1\" == \"-s\" ]]; then ord=\"store.size\"; shift; fi; q GET \"_cat/indices/$1?v&h=health,status,index,pri,rep,sc,docs.count,docs.deleted,store.size,pri.store.size&s=$ord\" | tee /tmp/es_idx_list; sed -i 's/^[^ ][^ ]*  *[^ ][^ ]*  *//; s/ .*//' /tmp/es_idx_list"
-   ord="index"; if [[ "$1" == "-s" ]]; then ord="store.size"; shift; fi; q GET "_cat/indices/$1?v&h=health,status,index,pri,rep,sc,docs.count,docs.deleted,store.size,pri.store.size&s=$ord" | tee /tmp/es_idx_list; sed -i 's/^[^ ][^ ]*  *[^ ][^ ]*  *//; s/ .*//' /tmp/es_idx_list
+   print_command " if [[ \"$1\" == \"-f\" ]]; then watch es eli; exit; fi; ord=\"index\"; if [[ \"$1\" == \"-s\" ]]; then ord=\"store.size\"; shift; fi; q GET \"_cat/indices/$1?v&h=health,status,index,pri,rep,sc,docs.count,docs.deleted,store.size,pri.store.size&s=$ord\" | tee /tmp/es_idx_list; sed -i 's/^[^ ][^ ]*  *[^ ][^ ]*  *//; s/ .*//' /tmp/es_idx_list"
+   if [[ "$1" == "-f" ]]; then watch es eli; exit; fi; ord="index"; if [[ "$1" == "-s" ]]; then ord="store.size"; shift; fi; q GET "_cat/indices/$1?v&h=health,status,index,pri,rep,sc,docs.count,docs.deleted,store.size,pri.store.size&s=$ord" | tee /tmp/es_idx_list; sed -i 's/^[^ ][^ ]*  *[^ ][^ ]*  *//; s/ .*//' /tmp/es_idx_list
    exit
 fi
 

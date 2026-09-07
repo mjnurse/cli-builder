@@ -22,7 +22,7 @@ _es_complete() {
             COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
         fi
         if [[ "$all" == "list indices" || "$prev" == "eli" || "$prev" == "@eli" ]]; then
-            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )
+            COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1 )" -- "$cur") )
         fi
         if [[ "$all" == "list open" || "$prev" == "elo" || "$prev" == "@elo" ]]; then
             COMPREPLY=( $(compgen -W "$(cat /tmp/es_idx_list 2>&1)" -- "$cur") )

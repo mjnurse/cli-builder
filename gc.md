@@ -1,6 +1,6 @@
 # GCloud (GCP)
 
-*Generated: 2026-07-29 09:22*
+*Generated: 2026-09-07 10:37*
 
 
 ## HELP
@@ -10,7 +10,7 @@
 
 ## Config
 
-**`auth login (gal)`** - auth login with --no-launch-browser
+**`auth login (gal) [-a]`** - auth login with --no-launch-browser. -a: adds application-default
 
 **`config list (gcl)`**
 

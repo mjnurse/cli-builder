@@ -1,6 +1,6 @@
 # DC
 
-*Generated: 2026-07-14 10:39*
+*Generated: 2026-09-03 16:46*
 
 
 ## HELP
@@ -17,7 +17,7 @@
 
 **`delete container (drm) <container_name>`**
 
-**`list containers (dps) [-d]`** - -d: show details
+**`list containers (dps) [-d>|<-f]`** - -d: show details -f: watch/follow
 
 **`logs (dlo) [-f] <container-name>`** - -f: follow log
 

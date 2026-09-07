@@ -22,7 +22,7 @@ if [[ "$1" == "help" || "$1" == "dhe" ]]; then
    usage="\x1b[95mhelp \x1b[96m(dhe)\x1b[97m [filter]\x1b[92m # Show help, optionally filtered by pattern\x1b[0m"
    check_params $# 0 "Usage: $usage"
    
-echo -e "\x1b[95mgenerated:2026-07-14 10:39\x1b[0m"
+echo -e "\x1b[95mgenerated:2026-09-03 16:46\x1b[0m"
 echo
 filter="$1"
 if [[ -n "$filter" ]]; then
@@ -68,10 +68,10 @@ fi
 
 if [[ "$1 $2" == "list containers" || "$1" == "dps" ]]; then
    [[ "$1" == "dps" ]] && shift || shift 2
-   usage="\x1b[95mlist containers \x1b[96m(dps)\x1b[97m [-d]\x1b[92m # -d: show details\x1b[0m"
+   usage="\x1b[95mlist containers \x1b[96m(dps)\x1b[97m [-d>|<-f]\x1b[92m # -d: show details -f: watch/follow\x1b[0m"
    check_params $# 0 "Usage: $usage"
-   print_command " if [[ $1 == -d ]]; then docker ps --all; else tmp=\"$(docker ps --all --format 'table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Size}}')\"; echo \"$tmp\" | head -n1; echo \"$tmp\" | tail -n+2 | grep 'Up [0-9]* min' | sort -k2,2; echo \"$tmp\" | tail -n+2 | grep -v 'Up [0-9]* min' | sort -k 2,2; fi"
-   if [[ $1 == -d ]]; then docker ps --all; else tmp="$(docker ps --all --format 'table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Size}}')"; echo "$tmp" | head -n1; echo "$tmp" | tail -n+2 | grep 'Up [0-9]* min' | sort -k2,2; echo "$tmp" | tail -n+2 | grep -v 'Up [0-9]* min' | sort -k 2,2; fi
+   print_command " if [[ $1 == -f ]]; then watch dc dps; elif [[ $1 == -d ]]; then docker ps --all; else tmp=\"$(docker ps --all --format 'table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Size}}')\"; echo \"$tmp\" | head -n1; echo \"$tmp\" | tail -n+2 | grep 'Up [0-9]* min' | sort -k2,2; echo \"$tmp\" | tail -n+2 | grep -v 'Up [0-9]* min' | sort -k 2,2; fi"
+   if [[ $1 == -f ]]; then watch dc dps; elif [[ $1 == -d ]]; then docker ps --all; else tmp="$(docker ps --all --format 'table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Size}}')"; echo "$tmp" | head -n1; echo "$tmp" | tail -n+2 | grep 'Up [0-9]* min' | sort -k2,2; echo "$tmp" | tail -n+2 | grep -v 'Up [0-9]* min' | sort -k 2,2; fi
    exit
 fi
 
