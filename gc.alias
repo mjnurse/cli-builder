@@ -16,11 +16,12 @@ _gc_complete() {
     done
 
 }
-complete -F _gc_complete gc @ghe @gal @gcl @gpg @gpl @gps @gcil @gkcl
+complete -F _gc_complete gc @ghe @gal @gar @gcl @gpg @gpl @gps @gcil @gkcl
 
 # Shortcut aliases
 alias @ghe='gc ghe'
 alias @gal='gc gal'
+alias @gar='gc gar'
 alias @gcl='gc gcl'
 alias @gpg='gc gpg'
 alias @gpl='gc gpl'

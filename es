@@ -34,7 +34,7 @@ echo -e "\x1b[97m- ES_PATH (default: <blank>), and\x1b[0m"
 echo -e "\x1b[97m- ES_AUTH (default: <blank> - no auth required)\x1b[0m"
 echo -e "\x1b[97mUse command show settings (ss) to see environment variable values.\x1b[0m"
 
-echo -e "\x1b[95mgenerated:2026-09-07 10:34\x1b[0m"
+echo -e "\x1b[95mgenerated:2026-09-08 09:30\x1b[0m"
 echo
 filter="$1"
 if [[ -n "$filter" ]]; then

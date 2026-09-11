@@ -17,6 +17,13 @@ auth login (al) [-a] :: \
     fi \
     ## auth login with --no-launch-browser. -a: adds application-default
 
+auth reset (ar) :: \
+    gcloud auth revoke $EMAIL; \
+    gcloud auth application-default revoke; \
+    gcloud auth application-default login; \
+    gcloud auth login \
+    ## Full reset of gcloud auth when having issues
+
 config list (cl) :: gcloud config list
 
 # --------------------------------------------------------------------------------

@@ -22,7 +22,7 @@ if [[ "$1" == "help" || "$1" == "rhe" ]]; then
    usage="\x1b[95mhelp \x1b[96m(rhe)\x1b[97m [filter]\x1b[92m # Show help, optionally filtered by pattern\x1b[0m"
    check_params $# 0 "Usage: $usage"
    
-echo -e "\x1b[95mgenerated:2026-07-14 10:39\x1b[0m"
+echo -e "\x1b[95mgenerated:2026-09-08 09:30\x1b[0m"
 echo
 filter="$1"
 if [[ -n "$filter" ]]; then

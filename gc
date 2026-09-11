@@ -26,7 +26,7 @@ echo -e "\x1b[92m------------\x1b[0m"
 echo -e "\x1b[92mGCloud (GCP)\x1b[0m"
 echo -e "\x1b[92m------------\x1b[0m"
 
-echo -e "\x1b[95mgenerated:2026-09-07 10:37\x1b[0m"
+echo -e "\x1b[95mgenerated:2026-09-08 09:30\x1b[0m"
 echo
 filter="$1"
 if [[ -n "$filter" ]]; then
@@ -59,6 +59,15 @@ if [[ "$1 $2" == "auth login" || "$1" == "gal" ]]; then
    check_params $# 0 "Usage: $usage"
    print_command " if [[ \"$1\" == \"-a\" ]]; then gcloud auth application-default login --no-launch-browser; else gcloud auth login --no-launch-browser; fi"
    if [[ "$1" == "-a" ]]; then gcloud auth application-default login --no-launch-browser; else gcloud auth login --no-launch-browser; fi
+   exit
+fi
+
+if [[ "$1 $2" == "auth reset" || "$1" == "gar" ]]; then
+   [[ "$1" == "gar" ]] && shift || shift 2
+   usage="\x1b[95mauth reset \x1b[96m(gar)\x1b[97m\x1b[92m # Full reset of gcloud auth when having issues\x1b[0m"
+   check_params $# 0 "Usage: $usage"
+   print_command " gcloud auth revoke $EMAIL; gcloud auth application-default revoke; gcloud auth application-default login; gcloud auth login"
+   gcloud auth revoke $EMAIL; gcloud auth application-default revoke; gcloud auth application-default login; gcloud auth login
    exit
 fi
 
