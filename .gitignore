@@ -1,8 +1,9 @@
+*.bat
+*.db
+*.dme
+*.pack
+*.swp
+*.tmp
+archive
 dme
 dme.*
-*.pack
-*.dme
-*.bat
-*.swp
-*.db
-*.tmp

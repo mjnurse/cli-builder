@@ -54,9 +54,27 @@ DESCRIPTION
                     definition filename).  For example, 'aliasLeadChars: es' will generate aliases
                     like @esli, @essi instead of @eli, @esi.
 
-  ( \ - is the line continuation character.  Any line ending \ is joined to the next line. )
+  Indentation (Python-style continuation)
+  ---------------------------------------
+  A command definition starts at the left margin (column 0).  The Linux command(s)
+  that make up its body are written on the following lines, indented beneath it -
+  just like a Python block.  No ';' separators and no trailing '\' are needed:
+  each indented line is a separate command, and relative indentation is preserved,
+  so you can indent the body of an if/while/for/case block naturally.
+
+  The body ends at the next line that returns to column 0 (a comment, a section
+  header, a blank line, or the next command definition).  '## help text' and
+  '!! completion command' lines may be written indented within the body.
+
+    ( For backward compatibility a trailing '\' still joins a line to the next,
+      and stray ';' separators are still accepted. )
 
   All other lines in the file are command definitions.  These lines are structured as follows:
+
+  name-1..name-n (shortcut) <param> [<opt_param] ::
+      command \$1 \$2
+
+  or, for a single short command, on one line:
 
   name-1..name-n (shortcut) <param> [<opt_param] :: command \$1 \$2
 
@@ -81,8 +99,10 @@ DESCRIPTION
     Separates the command definition with the Linux command that is run.
 
   command
-    Is an Linux command.  Parameter values entered after the command are specified using there
-    position preceded by a \$.  e.g \$1, \$2.
+    One or more Linux commands.  A single command may follow the '::' on the same
+    line; multiple commands are written on the following indented lines (see
+    "Indentation" above).  Parameter values entered after the command are specified
+    using their position preceded by a \$.  e.g \$1, \$2.
 
   Example
 
@@ -90,6 +110,15 @@ DESCRIPTION
   ----------------------------------------------------------------
   # FILE OPTIONS
   sort file (sf) <filename> <sort_parameter> :: cat \$1 | sort \$2
+
+  # A multi-command body using indentation (no ; or \\ needed):
+  clean sort (cs) <filename> ::
+      if [[ -s "\$1" ]]; then
+          sort -u "\$1"
+      else
+          echo "empty file"
+      fi
+      ## sort unique, warn on empty file
   ----------------------------------------------------------------
 
   This example sorts a file specified by a mandatory filename.  An optional sort parameter can
@@ -131,6 +160,62 @@ class Cmd:
     @property
     def opt_params(self):
         return [p for p, opt in self.params if opt]
+
+def group_blocks(lines):
+    """Group physical lines into logical blocks based on indentation.
+
+    A block starts on a non-blank line at indentation level 0 (no leading
+    whitespace).  Any following lines that are indented (start with whitespace)
+    are continuation lines belonging to that block.  Blank lines terminate the
+    current block.
+
+    Returns a list of blocks, where each block is a list of physical lines
+    (with the header line first).  Trailing '\\' line-continuation characters
+    are still honoured for backward compatibility: a line ending in '\\' is
+    joined to the next line regardless of its indentation.
+    """
+    blocks = []
+    current = None
+
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+
+        # Backward-compatible '\' continuation: join following line(s) first.
+        while line.rstrip().endswith('\\'):
+            joined = line.rstrip()[:-1]
+            nxt = lines[i + 1] if i + 1 < len(lines) else ''
+            # Preserve a single space where the two lines meet, matching the
+            # historical behaviour of joining continuation lines.
+            line = joined.rstrip() + ' ' + nxt.strip()
+            del lines[i + 1]
+
+        stripped = line.strip()
+
+        if not stripped:
+            # Blank line ends the current block.
+            current = None
+            i += 1
+            continue
+
+        indented = line[:1].isspace()
+
+        if indented and current is not None:
+            current.append(line)
+        else:
+            current = [line]
+            blocks.append(current)
+
+        i += 1
+
+    return blocks
+
+
+def block_min_indent(cont_lines):
+    """Smallest leading-whitespace width among non-blank continuation lines."""
+    indents = [len(l) - len(l.lstrip()) for l in cont_lines if l.strip()]
+    return min(indents) if indents else 0
+
 
 def parse_def(lines, title, description, cli_name, alias_lead_chars):
     """Parse definition file into commands and groups"""
@@ -181,35 +266,83 @@ fi''',
             comp=''
         ), 'HELP'))
 
-    for line in (l.strip() for l in lines):
-        # Skip comments and empty lines
-        if not line or line.startswith('#'):
+    for block in group_blocks(lines):
+        header = block[0].strip()
+        # Drop comment-only continuation lines, but keep '##' help directives
+        # ('###' is a comment, not help) and '!!' completion directives.
+        def _is_comment(l):
+            s = l.strip()
+            return s.startswith('#') and not (s.startswith('##') and not s.startswith('###'))
+        cont_lines = [l for l in block[1:] if not _is_comment(l)]
+
+        # Skip comments and empty blocks
+        if not header or header.startswith('#'):
             continue
-            
+
         # Group description
-        if line.startswith('='):
-            group = line[2:]
+        if header.startswith('='):
+            group = header[2:]
             continue
-        
-        # Direct command insertion
-        if line.startswith('cmd '):
-            cmds.append(('raw', line[4:]))
+
+        # Direct command insertion (may span multiple indented lines)
+        if header.startswith('cmd '):
+            body = header[4:]
+            if cont_lines:
+                base = block_min_indent(cont_lines)
+                for cl in cont_lines:
+                    body += '\n' + (cl[base:].rstrip() if cl.strip() else '')
+            cmds.append(('raw', body))
             continue
-            
-        # Command definition
-        if '::' not in line:
+
+        # Command definition must contain '::' somewhere in the block
+        block_has_sep = '::' in header or any('::' in l for l in cont_lines)
+        if not block_has_sep:
             continue
-            
-        # Extract parts
-        help_txt = re.search(r'##\s*(.+)', line)
-        comp_cmd = re.search(r'!!\s*([^#]+)', line)
-        line = re.sub(r'##.*|!!.*', '', line)
-        
-        defn, cmd = (s.strip() for s in line.split('::', 1))
+
+        # A '##' help directive or '!!' completion directive may appear inline
+        # on the header/command lines, or on their own indented continuation
+        # lines.  Pull them out of the block first, then treat everything that
+        # remains as the (possibly multi-line) command body.
+        help_txt = None
+        comp_cmd = None
+
+        def _extract(text):
+            nonlocal help_txt, comp_cmd
+            h = re.search(r'##\s*(.+)', text)
+            c = re.search(r'!!\s*([^#]+)', text)
+            if h and help_txt is None:
+                help_txt = h.group(1).strip()
+            if c and comp_cmd is None:
+                comp_cmd = c.group(1).strip()
+            return re.sub(r'##.*|!!.*', '', text)
+
+        header = _extract(header)
+        cont_clean = []
+        for cl in cont_lines:
+            leading = cl[:len(cl) - len(cl.lstrip())]
+            cont_clean.append(leading + _extract(cl.lstrip()).rstrip())
+
+        # Split header on the first '::' into the definition and the (first
+        # line of the) command body.
+        defn, _, first_cmd = header.partition('::')
+        defn = defn.strip()
+
+        # Assemble the multi-line command body: the remainder of the header
+        # line, followed by continuation lines with their relative indentation
+        # preserved (dedented to the shallowest continuation line).
+        cmd_lines = []
+        if first_cmd.strip():
+            cmd_lines.append(first_cmd.strip())
+        real_cont = [l for l in cont_clean if l.strip()]
+        if real_cont:
+            base = block_min_indent(real_cont)
+            for cl in cont_clean:
+                cmd_lines.append(cl[base:].rstrip() if cl.strip() else '')
+        cmd = '\n'.join(cmd_lines).rstrip()
 
         if cmd == '':
             print(f'Warning: Command missing for definition: {defn}\n')
-        
+
         # Parse command definition
         tokens = re.findall(r'\w+|\([^)]+\)|<[^>]+>|\[[^\]]+\]', defn)
         keys, params, shortcut = [], [], ''
@@ -233,8 +366,8 @@ fi''',
             shortcut=shortcut,
             params=params,
             cmd=cmd,
-            help=help_txt.group(1) if help_txt else '',
-            comp=comp_cmd.group(1) if comp_cmd else ''
+            help=help_txt if help_txt else '',
+            comp=comp_cmd if comp_cmd else ''
         ), group))
     
     return cmds
@@ -295,9 +428,14 @@ if [[ "{keys_template}" == "{cmd.all_keys}" || "$1" == "{cmd.shortcut}" ]]; then
    check_params $# {cmd.num_mandatory} "Usage: $usage"
 '''
         if cmd.all_keys not in ['h', 'help']:
-            escaped_cmd = cmd.cmd.replace('"', '\\"')
+            # Collapse the (possibly multi-line) command to a single line for the
+            # debug display only - this string is echoed, not executed.
+            display_cmd = '; '.join(l.strip() for l in cmd.cmd.splitlines() if l.strip())
+            escaped_cmd = display_cmd.replace('"', '\\"')
             script += f'''   print_command " {escaped_cmd}"\n'''
-        script += f'   {cmd.cmd}\n   exit\nfi\n'
+        # Emit the real command body, preserving line breaks / indentation.
+        cmd_body = cmd.cmd.replace('\n', '\n   ')
+        script += f'   {cmd_body}\n   exit\nfi\n'
         
         # Add alias
         aliases.append(f"alias @{cmd.shortcut}='{cli_name} {cmd.shortcut}'")
@@ -411,29 +549,25 @@ def main():
         with open(f'{def_file}.def') as f:
             lines = [l.rstrip() for l in f]
 
-        # Handle line continuations, extract title, description, and aliasLeadChars
-        i = 0
+        # Extract title, description, and aliasLeadChars (single-line, top-level
+        # directives).  Command grouping / line continuation is handled by
+        # group_blocks() inside parse_def().
         title = ""
         description = []
         alias_lead_chars = cli_name[0]  # Default to first char of filename
-        while i < len(lines):
-            if lines[i].startswith('@ ') and not lines[i].startswith('@@ '):
-                title = lines[i][2:].strip()
-                del lines[i]
+        remaining = []
+        for line in lines:
+            if line.startswith('@ ') and not line.startswith('@@ '):
+                title = line[2:].strip()
                 continue
-            if lines[i].startswith('@@ '):
-                description.append(lines[i][3:].strip())
-                del lines[i]
+            if line.startswith('@@ '):
+                description.append(line[3:].strip())
                 continue
-            if lines[i].startswith('aliasLeadChars:'):
-                alias_lead_chars = lines[i].split(':', 1)[1].strip()
-                del lines[i]
+            if line.startswith('aliasLeadChars:'):
+                alias_lead_chars = line.split(':', 1)[1].strip()
                 continue
-            if lines[i].endswith('\\'):
-                lines[i] = lines[i][:-1] + lines[i+1].lstrip()
-                del lines[i+1]
-            else:
-                i += 1
+            remaining.append(line)
+        lines = remaining
 
         cmds = parse_def(lines, title, description, cli_name, alias_lead_chars)
         

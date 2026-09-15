@@ -19,7 +19,7 @@ _dc_complete() {
             COMPREPLY=( $(compgen -W "$(docker ps --all --format '{{.Names}}')" -- "$cur") )
         fi
         if [[ "$all" == "logs" || "$prev" == "dlo" || "$prev" == "@dlo" ]]; then
-            COMPREPLY=( $(compgen -W "$(docker ps --all --format '{{.Names}}' )" -- "$cur") )
+            COMPREPLY=( $(compgen -W "$(docker ps --all --format '{{.Names}}')" -- "$cur") )
         fi
         if [[ "$all" == "rename container" || "$prev" == "dmv" || "$prev" == "@dmv" ]]; then
             COMPREPLY=( $(compgen -W "$(docker ps --all --format '{{.Names}}')" -- "$cur") )
@@ -28,13 +28,13 @@ _dc_complete() {
             COMPREPLY=( $(compgen -W "$(docker ps --all --format '{{.Names}}')" -- "$cur") )
         fi
         if [[ "$all" == "shell" || "$prev" == "dsh" || "$prev" == "@dsh" ]]; then
-            COMPREPLY=( $(compgen -W "$(docker ps --all --format '{{.Names}}' )" -- "$cur") )
+            COMPREPLY=( $(compgen -W "$(docker ps --all --format '{{.Names}}')" -- "$cur") )
         fi
         if [[ "$all" == "start container" || "$prev" == "dst" || "$prev" == "@dst" ]]; then
             COMPREPLY=( $(compgen -W "$(docker ps --all --format '{{.Names}}')" -- "$cur") )
         fi
         if [[ "$all" == "stop container" || "$prev" == "dso" || "$prev" == "@dso" ]]; then
-            COMPREPLY=( $(compgen -W "$(docker ps --all --format '{{.Names}}' )" -- "$cur") )
+            COMPREPLY=( $(compgen -W "$(docker ps --all --format '{{.Names}}')" -- "$cur") )
         fi
         if [[ "$all" == "remove network" || "$prev" == "drn" || "$prev" == "@drn" ]]; then
             COMPREPLY=( $(compgen -W "$(docker network ls --format '{{.Name}}')" -- "$cur") )

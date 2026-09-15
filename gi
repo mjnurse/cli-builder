@@ -22,31 +22,31 @@ if [[ "$1" == "help" || "$1" == "gihe" ]]; then
    usage="\x1b[95mhelp \x1b[96m(gihe)\x1b[97m [filter]\x1b[92m # Show help, optionally filtered by pattern\x1b[0m"
    check_params $# 0 "Usage: $usage"
    
-echo -e "\x1b[92m---\x1b[0m"
-echo -e "\x1b[92mGIT\x1b[0m"
-echo -e "\x1b[92m---\x1b[0m"
-
-echo -e "\x1b[95mgenerated:2026-09-08 09:30\x1b[0m"
-echo
-filter="$1"
-if [[ -n "$filter" ]]; then
-  # Show all section headers but only matching commands
-  while IFS= read -r line; do
-    if [[ "$line" =~ ^section= ]]; then
-      # Always show section headers
-      echo -e "\x1b[92m${line#section=}\x1b[0m"
-    elif [[ "$line" =~ usage= ]]; then
-      # Show command if it matches the filter
-      cmd_line="${line#*usage=}"
-      if echo "$cmd_line" | grep -iq "$filter"; then
-        echo -e "   $cmd_line"
-      fi
-    fi
-  done < <(egrep "^section=|^   usage=" "$0" | sed 's/\"//g')
-else
-  # Show everything
-  while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "^section=|^   usage=" "$0" | sed "s/.*usage=/   /; s/.*section=/\x1b[92m/; s/\"//g")
-fi
+   echo -e "\x1b[92m---\x1b[0m"
+   echo -e "\x1b[92mGIT\x1b[0m"
+   echo -e "\x1b[92m---\x1b[0m"
+   
+   echo -e "\x1b[95mgenerated:2026-09-14 17:03\x1b[0m"
+   echo
+   filter="$1"
+   if [[ -n "$filter" ]]; then
+     # Show all section headers but only matching commands
+     while IFS= read -r line; do
+       if [[ "$line" =~ ^section= ]]; then
+         # Always show section headers
+         echo -e "\x1b[92m${line#section=}\x1b[0m"
+       elif [[ "$line" =~ usage= ]]; then
+         # Show command if it matches the filter
+         cmd_line="${line#*usage=}"
+         if echo "$cmd_line" | grep -iq "$filter"; then
+           echo -e "   $cmd_line"
+         fi
+       fi
+     done < <(egrep "^section=|^   usage=" "$0" | sed 's/\"//g')
+   else
+     # Show everything
+     while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "^section=|^   usage=" "$0" | sed "s/.*usage=/   /; s/.*section=/\x1b[92m/; s/\"//g")
+   fi
    exit
 fi
 section="GENERAL"
@@ -55,8 +55,25 @@ if [[ "$1 $2 $3" == "add commit push" || "$1" == "giacp" ]]; then
    [[ "$1" == "giacp" ]] && shift || shift 3
    usage="\x1b[95madd commit push \x1b[96m(giacp)\x1b[97m [-f|--force] [message]\x1b[0m"
    check_params $# 0 "Usage: $usage"
-   print_command " force_yn=n; if [[ $1 == -f || $1 == --force ]]; then force_yn=y; shift; fi; if [[ \"$1\" == \"\" ]]; then message=\"Various\"; else message=\"$1\"; fi; [ -f ./gen-readme ] && ./gen-readme; git add .; git status; if [[ \"$1\" != \"-f\" ]]; then read -p 'Press a key to continue, CTRL-C to abort' dummy; fi; git commit -m 'Various'; git push origin"
-   force_yn=n; if [[ $1 == -f || $1 == --force ]]; then force_yn=y; shift; fi; if [[ "$1" == "" ]]; then message="Various"; else message="$1"; fi; [ -f ./gen-readme ] && ./gen-readme; git add .; git status; if [[ "$1" != "-f" ]]; then read -p 'Press a key to continue, CTRL-C to abort' dummy; fi; git commit -m 'Various'; git push origin
+   print_command " force_yn=n; if [[ $1 == -f || $1 == --force ]]; then; force_yn=y; shift; fi; if [[ \"$1\" == \"\" ]]; then; message=\"Various\"; else; message=\"$1\"; fi; [ -f ./gen-readme ] && ./gen-readme; git add .; git status; if [[ \"$1\" != \"-f\" ]]; then; read -p 'Press a key to continue, CTRL-C to abort' dummy; fi; git commit -m 'Various'; git push origin"
+   force_yn=n
+   if [[ $1 == -f || $1 == --force ]]; then
+       force_yn=y
+       shift
+   fi
+   if [[ "$1" == "" ]]; then
+       message="Various"
+   else
+       message="$1"
+   fi
+   [ -f ./gen-readme ] && ./gen-readme
+   git add .
+   git status
+   if [[ "$1" != "-f" ]]; then
+       read -p 'Press a key to continue, CTRL-C to abort' dummy
+   fi
+   git commit -m 'Various'
+   git push origin
    exit
 fi
 
@@ -64,8 +81,12 @@ if [[ "$1 $2 $3" == "list branches local" || "$1" == "gilbl" ]]; then
    [[ "$1" == "gilbl" ]] && shift || shift 3
    usage="\x1b[95mlist branches local \x1b[96m(gilbl)\x1b[97m [-d]\x1b[92m # -d - order by commit data\x1b[0m"
    check_params $# 0 "Usage: $usage"
-   print_command " if [[ $1 == -d ]]; then git branch --format='%(creatordate:short), %(refname:short)' | column -s, -t | sort; else git branch --format='%(creatordate:short), %(refname:short)' | column -s, -t; fi"
-   if [[ $1 == -d ]]; then git branch --format='%(creatordate:short), %(refname:short)' | column -s, -t | sort; else git branch --format='%(creatordate:short), %(refname:short)' | column -s, -t; fi
+   print_command " if [[ $1 == -d ]]; then; git branch --format='%(creatordate:short), %(refname:short)' | column -s, -t | sort; else; git branch --format='%(creatordate:short), %(refname:short)' | column -s, -t; fi"
+   if [[ $1 == -d ]]; then
+       git branch --format='%(creatordate:short), %(refname:short)' | column -s, -t | sort
+   else
+       git branch --format='%(creatordate:short), %(refname:short)' | column -s, -t
+   fi
    exit
 fi
 
@@ -73,8 +94,12 @@ if [[ "$1 $2 $3" == "list branches remote" || "$1" == "gilbr" ]]; then
    [[ "$1" == "gilbr" ]] && shift || shift 3
    usage="\x1b[95mlist branches remote \x1b[96m(gilbr)\x1b[97m [-d]\x1b[92m # -d - order by commit data\x1b[0m"
    check_params $# 0 "Usage: $usage"
-   print_command " if [[ $1 == -d ]]; then git branch -r --format='%(creatordate:short), %(refname:short)' | column -s, -t | sort; else git branch -r --format='%(creatordate:short), %(refname:short)' | column -s, -t; fi"
-   if [[ $1 == -d ]]; then git branch -r --format='%(creatordate:short), %(refname:short)' | column -s, -t | sort; else git branch -r --format='%(creatordate:short), %(refname:short)' | column -s, -t; fi
+   print_command " if [[ $1 == -d ]]; then; git branch -r --format='%(creatordate:short), %(refname:short)' | column -s, -t | sort; else; git branch -r --format='%(creatordate:short), %(refname:short)' | column -s, -t; fi"
+   if [[ $1 == -d ]]; then
+       git branch -r --format='%(creatordate:short), %(refname:short)' | column -s, -t | sort
+   else
+       git branch -r --format='%(creatordate:short), %(refname:short)' | column -s, -t
+   fi
    exit
 fi
 
@@ -118,8 +143,17 @@ if [[ "$1" == "history" || "$1" == "gih" ]]; then
    [[ "$1" == "gih" ]] && shift || shift 1
    usage="\x1b[95mhistory \x1b[96m(gih)\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
-   print_command " git log > /tmp/gi1; while read line; do echo $line; if [[ ${line:0:6} == commit ]]; then git diff-tree --no-commit-id --name-only -r ${line:7:99} | tr \"\n\" \" \" | fold -s -w 100; echo; fi; done < /tmp/gi1 | sed \"s/^  *//; /^$/d; s/^commit/${l80}\n${c_yel}Commit:/\" | sed \"s/^Author/${c_lcya}Author/; s/^Date/${c_lgre}Date/; s/$/${c_whi}/\"; rm -f /tmp/gi1 /tmp/gi2"
-   git log > /tmp/gi1; while read line; do echo $line; if [[ ${line:0:6} == commit ]]; then git diff-tree --no-commit-id --name-only -r ${line:7:99} | tr "\n" " " | fold -s -w 100; echo; fi; done < /tmp/gi1 | sed "s/^  *//; /^$/d; s/^commit/${l80}\n${c_yel}Commit:/" | sed "s/^Author/${c_lcya}Author/; s/^Date/${c_lgre}Date/; s/$/${c_whi}/"; rm -f /tmp/gi1 /tmp/gi2
+   print_command " git log > /tmp/gi1; while read line; do echo $line; if [[ ${line:0:6} == commit ]]; then; git diff-tree --no-commit-id --name-only -r ${line:7:99} |; tr \"\n\" \" \" | fold -s -w 100; echo; fi; done < /tmp/gi1 |; sed \"s/^  *//; /^$/d; s/^commit/${l80}\n${c_yel}Commit:/\" |; sed \"s/^Author/${c_lcya}Author/; s/^Date/${c_lgre}Date/; s/$/${c_whi}/\"; rm -f /tmp/gi1 /tmp/gi2"
+   git log > /tmp/gi1
+   while read line; do echo $line
+       if [[ ${line:0:6} == commit ]]; then
+           git diff-tree --no-commit-id --name-only -r ${line:7:99} |
+           tr "\n" " " | fold -s -w 100; echo
+       fi
+   done < /tmp/gi1 |
+   sed "s/^  *//; /^$/d; s/^commit/${l80}\n${c_yel}Commit:/" |
+   sed "s/^Author/${c_lcya}Author/; s/^Date/${c_lgre}Date/; s/$/${c_whi}/"
+   rm -f /tmp/gi1 /tmp/gi2
    exit
 fi
 
@@ -140,7 +174,29 @@ if [[ "$1 $2" == "push origin" || "$1" == "gipo" ]]; then
    git push origin
    exit
 fi
-gitsearch() { show_branch_yn=n; if [[ $1 == -b ]]; then show_branch_yn=y; fi; rm -f /tmp/gi-cli.tmp*; grep_args=""; [ -n "$1" ] && grep_args="$grep_args --grep=$1"; [ -n "$2" ] && grep_args="$grep_args --grep=$2"; [ -n "$3" ] && grep_args="$grep_args --grep=$3"; git log --all --oneline --all-match $grep_args > /tmp/gi-cli.tmp2; if [[ $show_branch_yn == n ]]; then cat /tmp/gi-cli.tmp2; else echo "$(wc -l < /tmp/gi-cli.tmp2) hits -  fetching branch details"; while read hash msg; do branches=$(git branch --all --contains "$hash" | head -1 | sed 's/^ *//'); echo  "$branches || $msg" >> /tmp/gi-cli.tmp; printf "."; done < /tmp/gi-cli.tmp2; echo; column -s "||" -t < /tmp/gi-cli.tmp; fi; rm -f  /tmp/gi-cli.tmp*; }
+gitsearch() {
+show_branch_yn=n
+if [[ $1 == -b ]]; then
+    show_branch_yn=y
+fi
+rm -f /tmp/gi-cli.tmp*
+grep_args=""
+[ -n "$1" ] && grep_args="$grep_args --grep=$1"
+[ -n "$2" ] && grep_args="$grep_args --grep=$2"
+[ -n "$3" ] && grep_args="$grep_args --grep=$3"
+git log --all --oneline --all-match $grep_args > /tmp/gi-cli.tmp2
+if [[ $show_branch_yn == n ]]; then
+    cat /tmp/gi-cli.tmp2
+else
+    echo "$(wc -l < /tmp/gi-cli.tmp2) hits -  fetching branch details"
+    while read hash msg; do
+        branches=$(git branch --all --contains "$hash" | head -1 | sed 's/^ *//')
+        echo  "$branches || $msg" >> /tmp/gi-cli.tmp
+        printf "."
+    done < /tmp/gi-cli.tmp2
+    echo; column -s "||" -t < /tmp/gi-cli.tmp
+fi
+rm -f  /tmp/gi-cli.tmp*; }
 
 if [[ "$1 $2 $3" == "search commit messages" || "$1" == "giscm" ]]; then
    [[ "$1" == "giscm" ]] && shift || shift 3

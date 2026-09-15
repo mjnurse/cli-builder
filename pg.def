@@ -14,192 +14,192 @@ cmd export PAGER=cat
 = SESSION
 # -------------------------------------------------------------------------------------------------
 
-connect (c) [<db_name>] :: \
+connect (c) [<db_name>] ::
     psql --host $PG_HOST -p $PG_PORT -d ${1:-$PG_DB} -U $PG_USER
 
-set connection defaults (scd) <host> <port> <db_name> <username> <password> :: \
-    echo "# Created: $(date)" > ./pg_conn_defaults; \
-    echo "export PG_HOST=\"$1\"" >> ./pg_conn_defaults; \
-    echo "export PG_PORT=\"$2\"" >> ./pg_conn_defaults; \
-    echo "export PG_DB=\"$3\"" >> ./pg_conn_defaults; \
-    echo "export PG_USER=\"$4\"" >> ./pg_conn_defaults; \
+set connection defaults (scd) <host> <port> <db_name> <username> <password> ::
+    echo "# Created: $(date)" > ./pg_conn_defaults
+    echo "export PG_HOST=\"$1\"" >> ./pg_conn_defaults
+    echo "export PG_PORT=\"$2\"" >> ./pg_conn_defaults
+    echo "export PG_DB=\"$3\"" >> ./pg_conn_defaults
+    echo "export PG_USER=\"$4\"" >> ./pg_conn_defaults
     echo "export PG_password=\"$5\"" >> ./pg_conn_defaults
 
 # -------------------------------------------------------------------------------------------------
 = DICTIONARY
 # -------------------------------------------------------------------------------------------------
 
-describe (d) <db_name> <schema_name> <object_name> :: \
+describe (d) <db_name> <schema_name> <object_name> ::
     psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c "\d \"$2\".\"$3\""
 
-cmd cld=' \
-    SELECT \
-    d.datname        AS "Name", \
-    pg_get_userbyid(d.datdba) AS "Owner", \
-    pg_encoding_to_char(d.encoding) AS "Encoding", \
-    d.datcollate     AS "Collate", \
-    d.datctype       AS "Ctype", \
-    t.spcname        AS "Tablespace", \
-    d.datallowconn   AS "Allow Conn", \
-    d.datconnlimit   AS "Conn Limit"\ 
-    FROM pg_database d \
-    LEFT JOIN pg_tablespace t ON t.oid = d.dattablespace \
+cmd cld='
+    SELECT
+    d.datname        AS "Name",
+    pg_get_userbyid(d.datdba) AS "Owner",
+    pg_encoding_to_char(d.encoding) AS "Encoding",
+    d.datcollate     AS "Collate",
+    d.datctype       AS "Ctype",
+    t.spcname        AS "Tablespace",
+    d.datallowconn   AS "Allow Conn",
+    d.datconnlimit   AS "Conn Limit"
+    FROM pg_database d
+    LEFT JOIN pg_tablespace t ON t.oid = d.dattablespace
     ORDER BY d.datname'
 
-list databases (ld) :: \
-    psql --host $PG_HOST -p $PG_PORT -U $PG_USER -c "$cld";
+list databases (ld) ::
+    psql --host $PG_HOST -p $PG_PORT -U $PG_USER -c "$cld"
     # psql --host $PG_HOST -p $PG_PORT -d $PG_DB -U $PG_USER -c "\l"
 
-cmd iq=" \
-    SELECT \
-        n.nspname AS schema_name, \
-        c.relname AS index_name, \
-        t.relname AS table_name, \
-        r.rolname AS owner, \
-        pg_size_pretty(pg_relation_size(c.oid)) AS index_size \
-    FROM \
-        pg_class c \
-        JOIN pg_index i ON c.oid = i.indexrelid \
-        JOIN pg_class t ON i.indrelid = t.oid \
-        JOIN pg_namespace n ON n.oid = c.relnamespace \
-        JOIN pg_roles r ON r.oid = c.relowner \
-    WHERE \
-        c.relkind = 'i' \
-        AND n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast') \
-        AND (LOWER(n.nspname) = LOWER('SCHEMANAME') OR 'SCHEMANAME' = '') \
-    ORDER BY \
+cmd iq="
+    SELECT
+        n.nspname AS schema_name,
+        c.relname AS index_name,
+        t.relname AS table_name,
+        r.rolname AS owner,
+        pg_size_pretty(pg_relation_size(c.oid)) AS index_size
+    FROM
+        pg_class c
+        JOIN pg_index i ON c.oid = i.indexrelid
+        JOIN pg_class t ON i.indrelid = t.oid
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+        JOIN pg_roles r ON r.oid = c.relowner
+    WHERE
+        c.relkind = 'i'
+        AND n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast')
+        AND (LOWER(n.nspname) = LOWER('SCHEMANAME') OR 'SCHEMANAME' = '')
+    ORDER BY
         1, 2"
 
-list indices (li) <db_name> [<schema_name>] :: \
-    psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c "${iq//SCHEMANAME/$2}"; \
+list indices (li) <db_name> [<schema_name>] ::
+    psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c "${iq//SCHEMANAME/$2}"
 
-cmd sq=" \
-    SELECT \
-        n.nspname AS schema_name, \
-        r.rolname AS owner, \
-        pg_size_pretty(SUM(pg_total_relation_size(c.oid))) AS total_size \
-    FROM \
-        pg_namespace n \
-        JOIN pg_roles r ON r.oid = n.nspowner \
-        LEFT JOIN pg_class c ON c.relnamespace = n.oid AND c.relkind IN ('r', 'i', 't', 'm') \
-    WHERE \
-        n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast') \
-    GROUP BY \
-        n.nspname, r.rolname \
-    ORDER BY \
+cmd sq="
+    SELECT
+        n.nspname AS schema_name,
+        r.rolname AS owner,
+        pg_size_pretty(SUM(pg_total_relation_size(c.oid))) AS total_size
+    FROM
+        pg_namespace n
+        JOIN pg_roles r ON r.oid = n.nspowner
+        LEFT JOIN pg_class c ON c.relnamespace = n.oid AND c.relkind IN ('r', 'i', 't', 'm')
+    WHERE
+        n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast')
+    GROUP BY
+        n.nspname, r.rolname
+    ORDER BY
         1, 2"
 
-list schema (ls) [<db_name>] :: \
-    echo "DATABASE: ${1:-$PG_DB}"; \
-    psql --host $PG_HOST -p $PG_PORT -d ${1:-$PG_DB} -U $PG_USER -c "${sq}";
+list schema (ls) [<db_name>] ::
+    echo "DATABASE: ${1:-$PG_DB}"
+    psql --host $PG_HOST -p $PG_PORT -d ${1:-$PG_DB} -U $PG_USER -c "${sq}"
 
-cmd tq=" \
-    SELECT \
-        n.nspname AS schema_name, \
-        c.relname AS table_name, \
-        r.rolname AS owner, \
-        pg_size_pretty(pg_total_relation_size(c.oid)) AS total_size \
-    FROM \
-        pg_class c \
-        JOIN pg_namespace n ON n.oid = c.relnamespace \
-        JOIN pg_roles r ON r.oid = c.relowner \
-    WHERE \
-        c.relkind = 'r' \
-        AND n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast') \
-        AND (LOWER(n.nspname) = LOWER('SCHEMANAME') OR 'SCHEMANAME' = '') \
-    ORDER BY \
+cmd tq="
+    SELECT
+        n.nspname AS schema_name,
+        c.relname AS table_name,
+        r.rolname AS owner,
+        pg_size_pretty(pg_total_relation_size(c.oid)) AS total_size
+    FROM
+        pg_class c
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+        JOIN pg_roles r ON r.oid = c.relowner
+    WHERE
+        c.relkind = 'r'
+        AND n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast')
+        AND (LOWER(n.nspname) = LOWER('SCHEMANAME') OR 'SCHEMANAME' = '')
+    ORDER BY
         1, 2"
 
-list tables (lt) <db_name> [<schema_name>] :: \
+list tables (lt) <db_name> [<schema_name>] ::
     psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c "${tq//SCHEMANAME/$2}"
 
-cmd oq=" \
-    WITH objs AS ( \
-        SELECT \
-            n.nspname AS schema_name, \
-            c.relname AS object_name, \
-            CASE c.relkind \
-            WHEN 'r' THEN 'table' \
-            WHEN 'p' THEN 'partitioned table' \
-            WHEN 'v' THEN 'view' \
-            WHEN 'm' THEN 'materialized view' \
-            WHEN 'S' THEN 'sequence' \
-            WHEN 'f' THEN 'foreign table' \
-            WHEN 'i' THEN 'index' \
-            WHEN 'I' THEN 'partitioned index' \
-            ELSE c.relkind::text \
-            END AS object_type \
-        FROM pg_catalog.pg_class c \
-        JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace \
-        WHERE (LOWER(n.nspname) = LOWER('SCHEMANAME') OR 'SCHEMANAME' = '') ) \
-    SELECT \
-        schema_name, \
-        object_name, \
-        object_type \
-    FROM \
-        objs \
-    ORDER BY \
+cmd oq="
+    WITH objs AS (
+        SELECT
+            n.nspname AS schema_name,
+            c.relname AS object_name,
+            CASE c.relkind
+            WHEN 'r' THEN 'table'
+            WHEN 'p' THEN 'partitioned table'
+            WHEN 'v' THEN 'view'
+            WHEN 'm' THEN 'materialized view'
+            WHEN 'S' THEN 'sequence'
+            WHEN 'f' THEN 'foreign table'
+            WHEN 'i' THEN 'index'
+            WHEN 'I' THEN 'partitioned index'
+            ELSE c.relkind::text
+            END AS object_type
+        FROM pg_catalog.pg_class c
+        JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+        WHERE (LOWER(n.nspname) = LOWER('SCHEMANAME') OR 'SCHEMANAME' = '') )
+    SELECT
+        schema_name,
+        object_name,
+        object_type
+    FROM
+        objs
+    ORDER BY
         1, 2"
 
-list objects (lo) <db_name> [<schema_name>] :: \
+list objects (lo) <db_name> [<schema_name>] ::
     psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c "${oq//SCHEMANAME/$2}"
 
-cmd sq=" \
-    SELECT \
-        CASE c.relkind \
-            WHEN 'r' THEN 'table' \
-            WHEN 'S' THEN 'sequence' \
-            WHEN 'i' THEN 'index' \
-            WHEN 'v' THEN 'view' \
-            WHEN 'm' THEN 'materialised view' \
-            ELSE c.relkind::TEXT \
-        END AS object_type, \
-        n.nspname AS schema, \
-        c.relname AS name \
-    FROM \
-        pg_class c \
-    JOIN \
-        pg_namespace n ON n.oid = c.relnamespace \
-    WHERE \
-        (    c.relname ILIKE 'SEARCHTERM' \
-          OR n.nspname ILIKE 'SEARCHTERM' ) \
-    AND \
-        n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast') \
-    UNION ALL \
-    SELECT \
-        'constraint' AS object_type, \
-        n.nspname AS schema, \
-        con.conname AS name \
-    FROM \
-        pg_constraint con \
-    JOIN \
-        pg_namespace n ON n.oid = con.connamespace \
-    WHERE \
-        (    con.conname ILIKE 'SEARCHTERM' \
-          OR n.nspname ILIKE 'SEARCHTERM' ) \
-    AND \
-        n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast') \
-    ORDER BY \
+cmd sq="
+    SELECT
+        CASE c.relkind
+            WHEN 'r' THEN 'table'
+            WHEN 'S' THEN 'sequence'
+            WHEN 'i' THEN 'index'
+            WHEN 'v' THEN 'view'
+            WHEN 'm' THEN 'materialised view'
+            ELSE c.relkind::TEXT
+        END AS object_type,
+        n.nspname AS schema,
+        c.relname AS name
+    FROM
+        pg_class c
+    JOIN
+        pg_namespace n ON n.oid = c.relnamespace
+    WHERE
+        (    c.relname ILIKE 'SEARCHTERM'
+          OR n.nspname ILIKE 'SEARCHTERM' )
+    AND
+        n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast')
+    UNION ALL
+    SELECT
+        'constraint' AS object_type,
+        n.nspname AS schema,
+        con.conname AS name
+    FROM
+        pg_constraint con
+    JOIN
+        pg_namespace n ON n.oid = con.connamespace
+    WHERE
+        (    con.conname ILIKE 'SEARCHTERM'
+          OR n.nspname ILIKE 'SEARCHTERM' )
+    AND
+        n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast')
+    ORDER BY
         object_type, schema, name"
 
-search dictionary (sd) <db_name> <search_term> :: \
-    psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c "${sq//SEARCHTERM/$2}" \
+search dictionary (sd) <db_name> <search_term> ::
+    psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c "${sq//SEARCHTERM/$2}"
     ## % matches multiple chars (inc. none), _ matches a single char
 
 # -------------------------------------------------------------------------------------------------
 = QUERY
 # -------------------------------------------------------------------------------------------------
 
-run sql (rs) <db_name> <sql> :: \
+run sql (rs) <db_name> <sql> ::
     psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c "$2"
 
-select all (sa) <db_name> [<schema_name>] <table_name> :: \
-    if [[ "$3" == "" ]]; then tn="\"$2\""; sn=""; else tn="\"$3\""; sn="\"$2\"."; fi; \
+select all (sa) <db_name> [<schema_name>] <table_name> ::
+    if [[ "$3" == "" ]]; then tn="\"$2\""; sn=""; else tn="\"$3\""; sn="\"$2\"."; fi
     psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c 'SELECT * FROM '${sn}${tn}
 
-truncate table (tt) <db_name> [<schema_name>] <table_name> :: \
-    if [[ "$3" == "" ]]; then tn="\"$2\""; sn=""; else tn="\"$3\""; sn="\"$2\"."; fi; \
-    read -p "Are you sure [yN]? " yn; \
-    if [[ ${yn^} == Y ]]; then \
-        psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c 'TRUNCATE TABLE '${sn}${tn}; \
+truncate table (tt) <db_name> [<schema_name>] <table_name> ::
+    if [[ "$3" == "" ]]; then tn="\"$2\""; sn=""; else tn="\"$3\""; sn="\"$2\"."; fi
+    read -p "Are you sure [yN]? " yn
+    if [[ ${yn^} == Y ]]; then
+        psql --host $PG_HOST -p $PG_PORT -d $1 -U $PG_USER -c 'TRUNCATE TABLE '${sn}${tn}
     fi

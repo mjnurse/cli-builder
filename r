@@ -22,27 +22,27 @@ if [[ "$1" == "help" || "$1" == "rhe" ]]; then
    usage="\x1b[95mhelp \x1b[96m(rhe)\x1b[97m [filter]\x1b[92m # Show help, optionally filtered by pattern\x1b[0m"
    check_params $# 0 "Usage: $usage"
    
-echo -e "\x1b[95mgenerated:2026-09-08 09:30\x1b[0m"
-echo
-filter="$1"
-if [[ -n "$filter" ]]; then
-  # Show all section headers but only matching commands
-  while IFS= read -r line; do
-    if [[ "$line" =~ ^section= ]]; then
-      # Always show section headers
-      echo -e "\x1b[92m${line#section=}\x1b[0m"
-    elif [[ "$line" =~ usage= ]]; then
-      # Show command if it matches the filter
-      cmd_line="${line#*usage=}"
-      if echo "$cmd_line" | grep -iq "$filter"; then
-        echo -e "   $cmd_line"
-      fi
-    fi
-  done < <(egrep "^section=|^   usage=" "$0" | sed 's/\"//g')
-else
-  # Show everything
-  while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "^section=|^   usage=" "$0" | sed "s/.*usage=/   /; s/.*section=/\x1b[92m/; s/\"//g")
-fi
+   echo -e "\x1b[95mgenerated:2026-09-14 17:03\x1b[0m"
+   echo
+   filter="$1"
+   if [[ -n "$filter" ]]; then
+     # Show all section headers but only matching commands
+     while IFS= read -r line; do
+       if [[ "$line" =~ ^section= ]]; then
+         # Always show section headers
+         echo -e "\x1b[92m${line#section=}\x1b[0m"
+       elif [[ "$line" =~ usage= ]]; then
+         # Show command if it matches the filter
+         cmd_line="${line#*usage=}"
+         if echo "$cmd_line" | grep -iq "$filter"; then
+           echo -e "   $cmd_line"
+         fi
+       fi
+     done < <(egrep "^section=|^   usage=" "$0" | sed 's/\"//g')
+   else
+     # Show everything
+     while IFS= read -r line; do echo -e "${line}${CRESET}"; done < <(egrep "^section=|^   usage=" "$0" | sed "s/.*usage=/   /; s/.*section=/\x1b[92m/; s/\"//g")
+   fi
    exit
 fi
 section="MDM"
@@ -61,7 +61,8 @@ if [[ "$1 $2" == "restart mdm" || "$1" == "rrm" ]]; then
    usage="\x1b[95mrestart mdm \x1b[96m(rrm)\x1b[97m [streaming|ui|all|k(afka)>|kapp|shaper]\x1b[92m # kapp starts kafka streaming for the application data source\x1b[0m"
    check_params $# 0 "Usage: $usage"
    print_command " mjn-stop-mdm; mjn-start-mdm $1"
-   mjn-stop-mdm; mjn-start-mdm $1
+   mjn-stop-mdm
+   mjn-start-mdm $1
    exit
 fi
 
@@ -99,7 +100,8 @@ if [[ "$1 $2 $3" == "cli build all" || "$1" == "rcba" ]]; then
    usage="\x1b[95mcli build all \x1b[96m(rcba)\x1b[97m\x1b[0m"
    check_params $# 0 "Usage: $usage"
    print_command " cd ~/mjnurse/cli-builder; cli-builder *.def"
-   cd ~/mjnurse/cli-builder; cli-builder *.def
+   cd ~/mjnurse/cli-builder
+   cli-builder *.def
    exit
 fi
 

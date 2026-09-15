@@ -4,152 +4,152 @@
 = IMAGES
 # -------------------------------------------------------------------------------------------------
 
-list images (li) [<name>] :: \
-    if [[ "$1" == "" ]]; then \
-        docker images; \
-    else \
-        filter="${1//\*/.\*}"; \
-        filter="${filter//%/.\*}"; \
-        docker images 2>/dev/null | egrep "^$filter .*|IMAGE"; \
-    fi \
+list images (li) [<name>] ::
+    if [[ "$1" == "" ]]; then
+        docker images
+    else
+        filter="${1//\*/.\*}"
+        filter="${filter//%/.\*}"
+        docker images 2>/dev/null | egrep "^$filter .*|IMAGE"
+    fi
     ## Use % or * as wildcards
 
 # -------------------------------------------------------------------------------------------------
 = CONTAINERS
 # -------------------------------------------------------------------------------------------------
 
-delete container (rm) <container_name> :: \
-    read -p "Are you sure [yN]? " yn; \
-    if [[ ${yn^} == Y ]]; then \
-        docker rm $1; \
-    fi \
-    !! docker ps --all --format '{{.Names}}' \
+delete container (rm) <container_name> ::
+    read -p "Are you sure [yN]? " yn
+    if [[ ${yn^} == Y ]]; then
+        docker rm $1
+    fi
+    !! docker ps --all --format '{{.Names}}'
 
-list containers (ps) [<-d>|<-f>] :: \
-    if [[ $1 == -f ]]; then watch dc dps; \ 
-    elif [[ $1 == -d ]]; then docker ps --all; \ 
-    else \
-        tmp="$(docker ps --all --format 'table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Size}}')"; \
-        echo "$tmp" | head -n1; \
-        echo "$tmp" | tail -n+2 | grep 'Up [0-9]* min' | sort -k2,2; \
-        echo "$tmp" | tail -n+2 | grep -v 'Up [0-9]* min' | sort -k 2,2; \
-    fi \
+list containers (ps) [<-d>|<-f>] ::
+    if [[ $1 == -f ]]; then watch dc dps
+    elif [[ $1 == -d ]]; then docker ps --all
+    else
+        tmp="$(docker ps --all --format 'table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Size}}')"
+        echo "$tmp" | head -n1
+        echo "$tmp" | tail -n+2 | grep 'Up [0-9]* min' | sort -k2,2
+        echo "$tmp" | tail -n+2 | grep -v 'Up [0-9]* min' | sort -k 2,2
+    fi
     ## -d: show details -f: watch/follow
 
-logs (lo) [<-f>] <container-name> :: \
-    if [[ $1 == -f ]]; then docker logs -f $2; else docker logs $1; fi \
-    !! docker ps --all --format '{{.Names}}' \
+logs (lo) [<-f>] <container-name> ::
+    if [[ $1 == -f ]]; then docker logs -f $2; else docker logs $1; fi
+    !! docker ps --all --format '{{.Names}}'
     ## -f: follow log
 
-errs (er) [<-f>] :: \
-    echo "" > /tmp/docker_err_p; \
-    while [[ true ]]; do \
-        for c in $(docker ps --format '{{.Names}}'); do \
-            docker logs $c 2>&1 | grep "ERROR:" | sed "s/^/$c: /"; \
-        done > /tmp/docker_err_c; \
-        grep -Fxvf /tmp/docker_err_p /tmp/docker_err_c; \
-        mv -f /tmp/docker_err_c /tmp/docker_err_p; \
-        if [[ $1 != -f ]]; then break; fi; \
-        sleep 2; \
+errs (er) [<-f>] ::
+    echo "" > /tmp/docker_err_p
+    while [[ true ]]; do
+        for c in $(docker ps --format '{{.Names}}'); do
+            docker logs $c 2>&1 | grep "ERROR:" | sed "s/^/$c: /"
+        done > /tmp/docker_err_c
+        grep -Fxvf /tmp/docker_err_p /tmp/docker_err_c
+        mv -f /tmp/docker_err_c /tmp/docker_err_p
+        if [[ $1 != -f ]]; then break; fi
+        sleep 2
     done
 
-pull container (pu) <container_name> :: \
+pull container (pu) <container_name> ::
     docker pull $1
 
-rename container (mv) <current_name> <new_name> :: \
-    docker rename $1 $2 \
+rename container (mv) <current_name> <new_name> ::
+    docker rename $1 $2
     !! docker ps --all --format '{{.Names}}'
 
-restart container (re) <container_name> :: \
-    docker restart $1 \
+restart container (re) <container_name> ::
+    docker restart $1
     !! docker ps --all --format '{{.Names}}'
 
-run container (ru) <source-container-name> <deployed-container-name> [<-p host-port:container-port>] :: \
-    if [[ $3 == -p ]]; then \
-        docker run -d $3 $4 $5 $6 --name $2 $1; \
-    else \
-        docker -d --name $2 $1; \
+run container (ru) <source-container-name> <deployed-container-name> [<-p host-port:container-port>] ::
+    if [[ $3 == -p ]]; then
+        docker run -d $3 $4 $5 $6 --name $2 $1
+    else
+        docker -d --name $2 $1
     fi
 
-shell (sh) [<-s>] [<-r>] <container_name> :: \
-    tmp_shell=bash; tmp_user=""; \
-    while [[ "$1" != "" ]]; do \
-        case $1 in \
-            -s) tmp_shell=sh;; \
-            -r) tmp_user="--user root";; \
-            *) break;; \
-        esac; \
-        echo $1; shift; \ 
-    done; \
-    docker exec -it $tmp_user $1 $tmp_shell \
-    !! docker ps --all --format '{{.Names}}' \
+shell (sh) [<-s>] [<-r>] <container_name> ::
+    tmp_shell=bash; tmp_user=""
+    while [[ "$1" != "" ]]; do
+        case $1 in
+            -s) tmp_shell=sh;;
+            -r) tmp_user="--user root";;
+            *) break;;
+        esac
+        echo $1; shift
+    done
+    docker exec -it $tmp_user $1 $tmp_shell
+    !! docker ps --all --format '{{.Names}}'
     ## bash shell. -s: sh, -r: user root
 
-start container (st) [<-a>] <container_name> :: docker start $1 \
+start container (st) [<-a>] <container_name> :: docker start $1
     !! docker ps --all --format '{{.Names}}'
 
 stats (s) :: docker stats ## Show the CPU, Memory consumption of containers
 
-stop container (so) [<-a>] <container_name> :: \
-    if [[ $1 == -a ]]; then \
-        conts="$(docker ps -q)"; \
-        if [[ "$conts" != "" ]]; then \
-            docker stop $conts; \
-        fi; \
-    else \
-        docker stop $1; \
-    fi \
-    !! docker ps --all --format '{{.Names}}' \
+stop container (so) [<-a>] <container_name> ::
+    if [[ $1 == -a ]]; then
+        conts="$(docker ps -q)"
+        if [[ "$conts" != "" ]]; then
+            docker stop $conts
+        fi
+    else
+        docker stop $1
+    fi
+    !! docker ps --all --format '{{.Names}}'
     ## -a: Stop all containers
 
 # -------------------------------------------------------------------------------------------------
 = COMPOSE
 # -------------------------------------------------------------------------------------------------
 
-compose build (cb) :: \
-    if [[ "$1" == "" ]]; then \
-        docker compose build; \
-    else \
-        docker compose -f $1 build; \
-    fi; \
+compose build (cb) ::
+    if [[ "$1" == "" ]]; then
+        docker compose build
+    else
+        docker compose -f $1 build
+    fi
     ## Build containers
 
 # docker compose build --no-cache --progress=plain
 
-compose down (cdo) [<service>] :: \
-    if [[ "$1" == "" ]]; then \
-        docker compose down; \
-    else \
-        docker compose -f $1 down; \
-    fi; \
+compose down (cdo) [<service>] ::
+    if [[ "$1" == "" ]]; then
+        docker compose down
+    else
+        docker compose -f $1 down
+    fi
     ## Stop and remove containers, networks
 
 compose list (cls) :: docker compose ls
 
-compose restart (cre) [<service>] :: \
-    if [[ "$1" == "" ]]; then \
-        docker compose restart; \
-    else \
-        docker compose -f $1 restart; \
-    fi; \
+compose restart (cre) [<service>] ::
+    if [[ "$1" == "" ]]; then
+        docker compose restart
+    else
+        docker compose -f $1 restart
+    fi
     ## Restart all containers
 
 compose top (ct) :: docker compose top
 
-compose up (cup) [<service>] :: \
-    if [[ "$1" == "" ]]; then \
-        docker compose up -d; \
-    else \
-        docker compose -f $1 up -d; \
-    fi; \
+compose up (cup) [<service>] ::
+    if [[ "$1" == "" ]]; then
+        docker compose up -d
+    else
+        docker compose -f $1 up -d
+    fi
     ## Deploy and run containers, networks
 
-compose build up (cbup) [<service>] :: \
-    if [[ "$1" == "" ]]; then \
-        docker compose up -d --build; \
-    else \
-        docker compose -f $1 up -d --build; \
-    fi; \
+compose build up (cbup) [<service>] ::
+    if [[ "$1" == "" ]]; then
+        docker compose up -d --build
+    else
+        docker compose -f $1 up -d --build
+    fi
     ## Build, deploy and run containers, networks
 
 # -------------------------------------------------------------------------------------------------
@@ -166,11 +166,11 @@ remove network (rn) <network-name> :: docker network rm $1 !! docker network ls 
 = SYSTEM
 # -------------------------------------------------------------------------------------------------
 
-system prune all (spa) :: \
-    read -p "THIS WILL REMOVE ALL unused containers, images, networks, and build cache (ie containers not created) - Are you sure [yN]? " yn; \
-    if [[ ${yn^} == Y ]]; then \
-        docker system prune -a; \
-    fi \
+system prune all (spa) ::
+    read -p "THIS WILL REMOVE ALL unused containers, images, networks, and build cache (ie containers not created) - Are you sure [yN]? " yn
+    if [[ ${yn^} == Y ]]; then
+        docker system prune -a
+    fi
     ## Remove ALL unused containers, images, networks, and build cache
 
 # -------------------------------------------------------------------------------------------------

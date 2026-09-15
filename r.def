@@ -4,26 +4,26 @@
 = MDM
 # ------------------------------------------------------------------------------------------------------------
 
-start mdm (sm) [<streaming|ui|all|k(afka)>|kapp>|shaper] :: \
-    mjn-start-mdm $1 \
+start mdm (sm) [<streaming|ui|all|k(afka)>|kapp>|shaper] ::
+    mjn-start-mdm $1
     ## kapp starts kafka streaming for the application data source
 
-restart mdm (rm) [<streaming|ui|all|k(afka)>|kapp|shaper>] :: \
-    mjn-stop-mdm; \
-    mjn-start-mdm $1 \
+restart mdm (rm) [<streaming|ui|all|k(afka)>|kapp|shaper>] ::
+    mjn-stop-mdm
+    mjn-start-mdm $1
     ## kapp starts kafka streaming for the application data source
 
-halt mdm (hm) :: \
+halt mdm (hm) ::
     mjn-stop-mdm
 
 # ------------------------------------------------------------------------------------------------------------
 = ES / Postgres
 # ------------------------------------------------------------------------------------------------------------
 
-start es (se) :: \
+start es (se) ::
     mjn-start-es-pg es
 
-start postgres (sp) :: \
+start postgres (sp) ::
     mjn-start-es-pg pg
 
 
@@ -31,6 +31,6 @@ start postgres (sp) :: \
 = CLI-BUILDER
 # ------------------------------------------------------------------------------------------------------------
 
-cli build all (cba) :: \
-    cd ~/mjnurse/cli-builder; \
+cli build all (cba) ::
+    cd ~/mjnurse/cli-builder
     cli-builder *.def

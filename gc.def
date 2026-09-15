@@ -2,26 +2,26 @@
 
 cmd if [[ "$GCP_PROJECT" != "" ]]; then GCP_PROJECT="--project $GCP_PROJECT"; fi
 
-cmd gc() { \
-    echo PROJ: $GCP_PROJECT; \
-    gcloud "$@" $GCP_PROJECT; \
-}
+cmd gc() {
+    echo PROJ: $GCP_PROJECT
+    gcloud "$@" $GCP_PROJECT
+    }
 
 # --------------------------------------------------------------------------------
 = Config
 # --------------------------------------------------------------------------------
 
-auth login (al) [-a] :: \
-    if [[ "$1" == "-a" ]]; then gcloud auth application-default login --no-launch-browser; \
-    else gcloud auth login --no-launch-browser; \
-    fi \
+auth login (al) [-a] ::
+    if [[ "$1" == "-a" ]]; then gcloud auth application-default login --no-launch-browser
+    else gcloud auth login --no-launch-browser
+    fi
     ## auth login with --no-launch-browser. -a: adds application-default
 
-auth reset (ar) :: \
-    gcloud auth revoke $EMAIL; \
-    gcloud auth application-default revoke; \
-    gcloud auth application-default login; \
-    gcloud auth login \
+auth reset (ar) ::
+    gcloud auth revoke $EMAIL
+    gcloud auth application-default revoke
+    gcloud auth application-default login
+    gcloud auth login
     ## Full reset of gcloud auth when having issues
 
 config list (cl) :: gcloud config list
@@ -34,21 +34,21 @@ project get (pg) :: gcloud config get project
 
 project list (pl) :: gcloud projects list
 
-project set (ps) :: \
-    echo "Available GCP Projects:" && \
-    gcloud projects list --format="table[no-heading](projectId,name)" | \
-    awk '{printf "%d. %s (%s)\n", NR, $1, substr($0, index($0,$2))}' | \
-    tee /tmp/projects.txt && \
-    read -p $'\nEnter project number: ' num && \
-    project=$(sed -n "${num}p" /tmp/projects.txt | awk '{print $2}') && \
-    gcloud config set project "$project" && \
+project set (ps) ::
+    echo "Available GCP Projects:" &&
+    gcloud projects list --format="table[no-heading](projectId,name)" |
+    awk '{printf "%d. %s (%s)\n", NR, $1, substr($0, index($0,$2))}' |
+    tee /tmp/projects.txt &&
+    read -p $'\nEnter project number: ' num &&
+    project=$(sed -n "${num}p" /tmp/projects.txt | awk '{print $2}') &&
+    gcloud config set project "$project" &&
     echo "Project set to: $project"
 
 # --------------------------------------------------------------------------------
 = Compute Engine (GCE)
 # --------------------------------------------------------------------------------
 
-compute instances list (cil) :: gc compute instances list 
+compute instances list (cil) :: gc compute instances list
 
 # --------------------------------------------------------------------------------
 = Kubernetes/Containers
